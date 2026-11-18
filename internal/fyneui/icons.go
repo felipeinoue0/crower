@@ -357,7 +357,9 @@ func newEmojiButton(value string, onTapped func()) *emojiButton {
 	button.text = canvas.NewText("", theme.Color(theme.ColorNameForeground))
 	button.text.Alignment = fyne.TextAlignCenter
 
-	button.box = container.NewGridWrap(fyne.NewSize(48, 48), container.NewStack(
+	// The window's one button height, square: a 48px box beside a 40px Delete
+	// made the Groups row look misaligned (#545).
+	button.box = container.NewGridWrap(fyne.NewSize(buttonHeight, buttonHeight), container.NewStack(
 		button.background,
 		container.NewCenter(button.text),
 	))
@@ -378,6 +380,10 @@ func (b *emojiButton) Tapped(*fyne.PointEvent) {
 	}
 }
 
+// emojiButtonTextSize fills the 40px button with the glyph and leaves a margin
+// inside its border.
+const emojiButtonTextSize float32 = 24
+
 // SetEmoji shows the emoji at a readable size; an empty value shows "Pick".
 func (b *emojiButton) SetEmoji(value string) {
 	b.value = strings.TrimSpace(value)
@@ -387,7 +393,7 @@ func (b *emojiButton) SetEmoji(value string) {
 		b.text.TextSize = theme.Size(theme.SizeNameText)
 	} else {
 		b.text.Text = b.value
-		b.text.TextSize = 28
+		b.text.TextSize = emojiButtonTextSize
 	}
 
 	b.text.Refresh()

@@ -16,6 +16,7 @@ crower execute <command> [params...]
 | `-l`, `--last` | Run the most recently executed command |
 | `-c`, `--create` | Run the most recently created command |
 | `-u`, `--update` | Run the most recently updated command |
+| `-n`, `--dry-run` | Print the expanded line(s) and the target; run and record nothing |
 
 ## 💡 Examples
 
@@ -24,7 +25,19 @@ crower execute deploy
 cr deploy                       # same thing
 crower execute greet John dev   # {1} = John, {2} = dev
 crower execute --last           # re-run what you just ran
+crower greet John dev --dry-run # print the expanded line — run nothing
 ```
+
+## 🖥️ It runs in your terminal
+
+The command is attached to your terminal: it reads the keyboard, prints as it
+goes and keeps its colours. `ssh`, `vim`, `htop`, `git rebase -i` and anything
+that asks a question work through crower and through a
+[shell alias](Shell-Integration). Ctrl+C goes to the command; crower outlives
+it and still records the run.
+
+A command with a `Timeout` runs in its own process group so it can be stopped
+cleanly: it gets no keyboard input, and Ctrl+C cancels it.
 
 ## 🧠 Parameters
 
@@ -43,8 +56,9 @@ cr find "TODO" "internal/"      # quoted correctly, even with spaces
 
 ## 🎯 Execution target
 
-A command can say where and how it runs. The fields live in the configuration
-file or in a pack; `create` and `update` do not have flags for them yet.
+A command can say where and how it runs. `create` and `update` set `Shell`,
+`Cwd` and `Timeout` with `--shell`, `--cwd` and `--timeout`; `Env` (and `Steps`)
+live in the configuration file or in a pack.
 
 | Field | Meaning |
 | --- | --- |

@@ -182,11 +182,13 @@ the history, so `revert` can bring the command back.
 ## 📋 crower list
 
 ```text
-crower list [flags]
+crower list [search] [flags]
 ```
 
 | Flag | Short | Meaning |
 | --- | --- | --- |
+| `--group <name>` | `-g` | only the commands of that group (case-insensitive) |
+| `--sort <order>` | `-s` | `name`, `runs` (most used first) or `recent` (last run first) |
 | `--process` | `-p` | list running processes |
 | `--history` | `-i` | list the history, newest first |
 | `--folder <dir>` | `-o` | list the files in a folder |
@@ -196,12 +198,30 @@ crower list [flags]
 
 ```bash
 crower list
+crower list docker
+crower list --group work --sort runs
 crower list --history
 crower list --folder ~/projects
 crower list --json
 ```
 
-With no flag, crower lists the managed commands in the order they were saved.
+With no flag, crower lists the managed commands in the order they were saved:
+`#` (the saved row), icon and name, aliases, group, how many times it ran and
+when it last ran (counted from the history), and the line it runs with its
+description. A search keeps the commands whose name, alias, line, description
+or group contains it. Columns no command uses are left out.
+
+On a terminal the list is coloured and cut to the window's width — the optional
+columns give way before the command does. Piped, with `NO_COLOR`, or with
+`TERM=dumb`, it is plain and every line is whole. `--json` adds `runs` and
+`last_run` to each command.
+
+**Bare `crower` / `cr`** in an interactive terminal opens a fuzzy finder over the
+same commands, most used first: type to filter, `↑`/`↓` (or `Ctrl+P`/`Ctrl+N`,
+`Tab`) to move, `Enter` to run, `Esc` or `Ctrl+C` to leave. A command with
+declared `Params` asks for each; one whose line has a placeholder asks for its
+arguments. Without a terminal, with `--no-input`, or with no commands, bare
+`crower` prints the help.
 
 ## ▶️ crower execute
 
@@ -216,12 +236,24 @@ Run a managed command by name or alias. `crower <name>` is the same thing.
 | `--last` | `-l` | run the last executed command |
 | `--create` | `-c` | run the last created command |
 | `--update` | `-u` | run the last updated command |
+| `--dry-run` | `-n` | print the expanded line(s) and the target; run and record nothing |
 
 ```bash
 crower execute greet
 crower greet
+crower greet Ada --dry-run
 crower execute --last
 ```
+
+The command runs **attached to your terminal**: it reads your keyboard, writes
+as it goes and keeps its colours, so `ssh`, `vim`, `htop` and prompts work
+through an alias. Ctrl+C goes to the command; crower outlives it and records
+the run. A command with a `Timeout` runs in its own process group, gets no
+stdin, and Ctrl+C cancels it. (`crower gui` and the window capture the output
+and show it instead.)
+
+`--dry-run` writes the expanded steps to stdout — `crower x --dry-run | sh` is a
+legitimate use — and the shell, folder, env keys and timeout to stderr.
 
 Parameters after the command fill `{1}`, `{2}`, … in its steps; `{}` takes the
 rest. Each parameter is quoted before it reaches the shell.
@@ -231,8 +263,9 @@ A command may declare the shell it needs and the folder it runs in. `Shell` is
 platform's own shell (`sh` on Linux and macOS, `cmd` on Windows). `Cwd` is the
 working directory, and a leading `~` is the user's home. Every step of a Steps
 command inherits both. An unknown shell, or a folder that does not exist, fails
-before anything runs. Set both in the configuration file or in a pack; `create`
-and `update` have no flags for them yet.
+before anything runs. Set them with `create`/`update` (`--shell`, `--cwd`,
+`--timeout`), in the configuration file, or in a pack; `Steps` and `Env` are
+set in the file or a pack.
 
 `Env` merges entries over the process environment. A value that is exactly
 `${VAR}` reads `VAR` from the environment, and an unset variable is an error
@@ -393,19 +426,33 @@ crower export --out ./commands.toml
 ## 📥 crower import
 
 ```text
-crower import <file>
+crower import [file] [flags]
 ```
 
-Import commands from a TOML file.
+Import commands from a TOML file, or the aliases your shell already has.
 
-| Flag | Meaning |
-| --- | --- |
-| `--overwrite` | replace a command that already exists with the same name |
+| Flag | Short | Meaning |
+| --- | --- | --- |
+| `--overwrite` | | replace a command that already exists with the same name |
+| `--from-shell` | | import shell aliases: from the startup files, a file, or `-` (stdin) |
+| `--dry-run` | `-n` | with `--from-shell`, list what would be imported and write nothing |
 
 ```bash
 crower import ./commands.toml
 crower import ./commands.toml --overwrite
+crower import --from-shell --dry-run
+crower import --from-shell
+crower import --from-shell ~/.bash_aliases
+alias | crower import --from-shell -
 ```
+
+`--from-shell` with no file **reads, never runs**: `~/.bashrc`,
+`~/.bash_aliases`, `~/.bash_profile`, `~/.profile`, `~/.zshrc`,
+`~/.zsh_aliases`, fish's `config.fish`, `conf.d/*.fish` and the functions
+`alias --save` writes, and the PowerShell profiles (`Set-Alias`, `New-Alias`).
+From stdin it also accepts zsh's bare `name=value` output. An alias crower
+already has with the same line is skipped, so importing twice changes nothing;
+imported commands get the group `imported` and a description naming the file.
 
 Names and aliases share one namespace: an import that would collide is renamed
 rather than silently shadowing a command.
@@ -509,14 +556,23 @@ It reads only: nothing is created beyond the config folder the run needs.
 
 ## 🚀 crower init
 
-```bash
-crower init            # show the line for your shell
-crower init --apply    # append it to the startup file
+```text
+crower init [bash|zsh|fish|powershell|cmd] [flags]
 ```
 
-Prints the PATH line for bash, zsh or fish and where it goes. `--apply` appends
-it once; a second run is a no-op. It also prints the completion command for the
-detected shell.
+```bash
+crower init                 # show what your shell needs
+crower init --apply         # write it into the startup file
+eval "$(crower init zsh)"   # the hook itself, for a startup file
+```
+
+With no shell, prints the PATH line and the hook line for the detected shell
+and where they go; `--apply` appends both once (a second run is a no-op), the
+PowerShell profile included. With a shell, prints the **hook**: one alias per
+command name and alias, a re-sync after `create`/`update`/`delete`/`import`/
+`revert`/`restore`/`reset`/`setup`, and tab completion. A name the shell
+already knows is skipped. `cmd` prints doskey macros. See
+[🐚 Shell integration](Shell-Integration).
 
 ## 🧾 Exit codes
 

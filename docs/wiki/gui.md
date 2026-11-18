@@ -39,12 +39,17 @@ always yields a catalogue emoji; a value set with `--icon` is shown as stored.
 The **Group** field is a dropdown of the groups in use plus **New group**, which
 asks for a name and selects it, so a group never has to be typed.
 
-`New command` sits at the top right of the Commands tab, above the list it adds
-to; the **Filter** row under it narrows the cards by name, alias, exec, group and
-description. Rules separate the create and filter controls, the setup and group
-rows, and the cards themselves.
+The **Filter** row narrows the cards by name, alias, exec, group and
+description, and **New command** — the tab's one primary (blue) button — sits at
+the end of the same row. Above it, the setup and group rows hold their scope
+controls: **New setup** and **Groups** are neutral buttons, and **Delete setup**
+is a quiet one that still asks for the setup's name before deleting anything.
+Rules separate the scope rows, the filter row and the cards.
 
-On the Commands tab, each command is a card: a name with a chevron that opens
+On the Commands tab, each command is a card. A closed card already says what it
+does: under the name, a dimmed monospace caption shows the line it runs (steps
+joined with `&&`) and its aliases, cut with `…` to the card's width. The name
+and chevron open
 into the labelled fields (name, exec, aliases, group, description, params, cwd,
 shell, timeout and numbered steps), a parameter entry, and **Run**, **Edit** and
 **Delete**. Opening one closes the previous card; a collapsed card carries no
@@ -58,6 +63,13 @@ left-aligned two-column list, with the actions under a rule. Labels and values
 are both selectable. The action row is spaced and coloured: **Run** green,
 **Edit** blue, **Delete** red and **Restore this state** amber, so the risk of
 each action reads before its label.
+
+The window has its own palette for the light and dark themes (it follows the
+system): layered neutral surfaces — page, card, field — one calm blue for the
+primary action, and muted status colours. Text on every coloured button keeps
+at least 4.5:1 contrast. History cards list only the fields an entry recorded,
+and every Tools form shares one label column, so neighbouring cards' fields
+line up.
 
 The edit dialog also changes the rest of the command: **Description**,
 **Params** (comma-separated), **Cwd**, **Shell** and **Timeout**. Emptying a

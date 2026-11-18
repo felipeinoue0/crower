@@ -234,7 +234,10 @@ func (u *ui) commandsTab() fyne.CanvasObject {
 	u.groupFilter = widget.NewSelect([]string{allGroupsLabel}, u.selectGroup)
 	u.refreshGroups()
 
-	groupsButton := newButton("Groups", theme.GridIcon(), widget.HighImportance, u.showGroups)
+	// One primary action per screen: New command. The scope controls are
+	// neutral, and the destructive one is quiet -- it still asks for the
+	// setup's name before anything is deleted.
+	groupsButton := newButton("Groups", theme.GridIcon(), widget.MediumImportance, u.showGroups)
 
 	labels, choices := u.setupChoicesList()
 	u.setupChoices = choices
@@ -261,9 +264,9 @@ func (u *ui) commandsTab() fyne.CanvasObject {
 	setupRow := toolbarRow(labelWidth, controlWidth, setupLabel, u.setupSelect)
 
 	if u.setups != nil {
-		newSetup := newButton("New setup", theme.ContentAddIcon(), widget.HighImportance, u.showNewSetup)
+		newSetup := newButton("New setup", theme.ContentAddIcon(), widget.MediumImportance, u.showNewSetup)
 
-		removeSetup := newButton("Delete setup", theme.DeleteIcon(), widget.DangerImportance, u.showDeleteSetup)
+		removeSetup := newButton("Delete setup", theme.DeleteIcon(), widget.LowImportance, u.showDeleteSetup)
 
 		setupRow.Add(newSetup)
 		setupRow.Add(removeSetup)
@@ -272,9 +275,9 @@ func (u *ui) commandsTab() fyne.CanvasObject {
 	groupRow := toolbarRow(labelWidth, controlWidth, groupLabel, u.groupFilter)
 	groupRow.Add(groupsButton)
 
-	filterRow := container.NewBorder(nil, nil, selectableLabel("Filter"), nil, filter)
-
-	createRow := container.NewHBox(newCommand)
+	// The filter and the action that adds to the list it filters share one
+	// row: the list's own controls, one line above it.
+	filterRow := container.NewBorder(nil, nil, selectableLabel("Filter"), newCommand, filter)
 
 	// Setup and group scope the whole tab; filter and New command act on the
 	// command list, so a rule separates the two groups. Every row takes the
@@ -285,7 +288,6 @@ func (u *ui) commandsTab() fyne.CanvasObject {
 		groupRow,
 		widget.NewSeparator(),
 		filterRow,
-		createRow,
 		widget.NewSeparator(),
 	)
 
@@ -338,7 +340,7 @@ func (u *ui) rebuildCommands() {
 	if len(objects) == 0 {
 		text := "No commands match the filter."
 		if u.model.Commands.Len() == 0 {
-			text = "No commands yet. Use New command to add one."
+			text = "No commands yet. Use New command to add one, or run \"crower import --from-shell\" in a terminal to bring in the aliases you already have."
 		}
 
 		u.commandEmpty.SetText(text)

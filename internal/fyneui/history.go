@@ -278,9 +278,17 @@ func (u *ui) buildHistoryBody(card *historyCard) fyne.CanvasObject {
 	}
 
 	for _, field := range detail.Fields {
+		value := historyFieldValue(field.Key, field.Value)
+
+		// A field the operation left empty (no aliases, no params) is a label
+		// with nothing beside it; the raw note below still has every key.
+		if strings.TrimSpace(value) == "" {
+			continue
+		}
+
 		fields = append(fields, detailField{
 			Label: historyFieldLabel(field.Key),
-			Value: historyFieldValue(field.Key, field.Value),
+			Value: value,
 		})
 	}
 

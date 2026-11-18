@@ -35,7 +35,7 @@ func newExpandableCard(emoji, title string, build func() fyne.CanvasObject) *exp
 	card.body = container.NewVBox()
 	card.body.Hide()
 
-	background := canvas.NewRectangle(theme.Color(theme.ColorNameInputBackground))
+	background := canvas.NewRectangle(theme.Color(colorNameCard))
 	background.CornerRadius = theme.Size(theme.SizeNameInputRadius)
 	background.StrokeColor = theme.Color(theme.ColorNameSeparator)
 	background.StrokeWidth = theme.Size(theme.SizeNameSeparatorThickness)

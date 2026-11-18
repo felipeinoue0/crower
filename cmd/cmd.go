@@ -105,7 +105,7 @@ Every command has its own help: crower <command> --help.`,
 		session := newExecuteSession(cfg)
 
 		return executecommand.New(session, session, session, session, session).Run(
-			executecommand.Request{Key: args[0], Params: args[1:]},
+			executecommand.Request{Key: args[0], Params: args[1:], DryRun: dryRunFlag},
 		)
 	},
 }
@@ -147,6 +147,7 @@ func init() {
 
 	// Flags
 	rootCmd.Flags().BoolVarP(&versionFlag, "version", "v", false, "print the current version")
+	rootCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "n", false, "print what a command would run, and run nothing")
 	rootCmd.Flags().BoolVar(&upgradeFlag, "upgrade", false, "install the latest version (asks first; use --yes in scripts)")
 	rootCmd.Flags().BoolVar(&checkNewVersion, "check", false, "check whether a newer version exists")
 	rootCmd.Flags().BoolVarP(&assumeYesFlag, "yes", "y", false, "install without asking for confirmation")

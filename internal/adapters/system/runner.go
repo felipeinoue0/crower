@@ -3,9 +3,11 @@ package system
 import (
 	"context"
 	"fmt"
+	"io"
 	"maps"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -41,11 +43,71 @@ type Target struct {
 // depth guard around a self-invocation are technology.
 type Runner struct {
 	shell *shell.Runner
+
+	// live, when set, attaches the command to these streams instead of
+	// capturing its output: the command reads the terminal, writes as it goes,
+	// and keeps its colours.
+	live *Streams
 }
 
-// NewRunner builds a Runner that runs on the host.
+// Streams is the terminal a live command is attached to.
+type Streams struct {
+	In  io.Reader
+	Out io.Writer
+	Err io.Writer
+}
+
+// NewRunner builds a Runner that runs on the host and captures the output, for
+// an interface that displays it itself.
 func NewRunner() *Runner {
 	return &Runner{shell: shell.New()}
+}
+
+// NewLiveRunner builds a Runner whose commands run attached to streams -- the
+// terminal, for the CLI -- so an interactive command (ssh, vim, a prompt)
+// works and a long one shows its output as it happens. Run returns no output:
+// it has already been written.
+func NewLiveRunner(streams Streams) *Runner {
+	return &Runner{shell: shell.New(), live: &streams}
+}
+
+// finish runs a prepared command, captured or live.
+//
+// A command with a timeout runs in its own process group (see shell.Isolate),
+// so it is a background job to the terminal: it gets no stdin -- a read would
+// stop it with SIGTTIN -- and Ctrl+C cancels it through stop, since the
+// terminal's interrupt no longer reaches its group.
+func (r *Runner) finish(c *exec.Cmd, isolated bool, stop context.CancelFunc) (string, error) {
+	if r.live == nil {
+		out, err := c.CombinedOutput()
+		return string(out), err
+	}
+
+	c.Stdout, c.Stderr = r.live.Out, r.live.Err
+	if !isolated {
+		c.Stdin = r.live.In
+	}
+
+	// Ctrl+C reaches the whole foreground process group. The child decides
+	// what it means; crower must outlive it to report and record the run.
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, os.Interrupt)
+	defer signal.Stop(interrupts)
+
+	done := make(chan struct{})
+	defer close(done)
+
+	if isolated {
+		go func() {
+			select {
+			case <-interrupts:
+				stop()
+			case <-done:
+			}
+		}()
+	}
+
+	return "", c.Run()
 }
 
 // Run runs one line and returns its combined output.
@@ -65,9 +127,9 @@ func (r *Runner) Run(line string, target Target) (string, error) {
 		return "", err
 	}
 
-	out, err := c.CombinedOutput()
+	out, err := r.finish(c, target.Timeout != "", cancel)
 
-	return string(out), timedOut(ctx, err, target.Timeout)
+	return out, timedOut(ctx, err, target.Timeout)
 }
 
 // RunNested runs a step that calls crower again.
@@ -105,9 +167,9 @@ func (r *Runner) RunNested(line string, target Target) (string, error) {
 		return "", err
 	}
 
-	out, err := c.CombinedOutput()
+	out, err := r.finish(c, target.Timeout != "", cancel)
 
-	return string(out), timedOut(ctx, err, target.Timeout)
+	return out, timedOut(ctx, err, target.Timeout)
 }
 
 // command builds the process for one line, rejecting a target that cannot run.

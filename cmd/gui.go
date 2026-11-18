@@ -12,7 +12,7 @@ import (
 // its own interaction, so it uses the Execute entry point, which neither
 // prompts nor records history.
 func newExecutor(cfg *session.Session) *executecommand.UseCase {
-	session := newExecuteSession(cfg)
+	session := newCapturingExecuteSession(cfg)
 
 	return executecommand.New(session, session, session, session, session)
 }

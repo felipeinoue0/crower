@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/fiwon123/crower/internal/adapters/notes"
 	"github.com/fiwon123/crower/internal/adapters/output"
 	"github.com/fiwon123/crower/internal/adapters/system"
+	"github.com/fiwon123/crower/internal/adapters/terminal"
 	"github.com/fiwon123/crower/internal/application/listcontent"
 	"github.com/fiwon123/crower/internal/session"
 
@@ -11,17 +14,22 @@ import (
 )
 
 var historyFlag bool
+var listGroup string
+var listSort string
 
 // Cmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list [flags]",
+	Use:   "list [search] [flags]",
 	Short: "List commands, history, processes, folders or variables.",
 	Long: `List commands, history, processes, folders or variables.
 
 With no flag, crower lists the managed commands in the order they were
-saved.
+saved, with how often and when each one last ran. A search keeps the commands
+whose name, alias, line, description or group contains it.
 
 	crower list
+	crower list docker
+	crower list --group work --sort runs
 	crower list --history
 	crower list --process
 	crower list --folder ~/projects
@@ -30,6 +38,8 @@ saved.
 
 --json prints one JSON object on stdout instead of a table.`,
 	Example: `	crower list
+	crower list git
+	crower list --sort recent
 	crower list --history
 	crower list --folder ~/projects
 	crower list --json`,
@@ -39,7 +49,7 @@ saved.
 			return err
 		}
 
-		request := listcontent.Request{Args: args}
+		request := listcontent.Request{Args: args, Group: listGroup, Sort: listSort}
 
 		switch {
 		case processFlag:
@@ -83,12 +93,31 @@ func newListSession(cfg *session.Session) listSession {
 
 // Emit writes the text, or the payload when --json was asked for.
 func (s listSession) Emit(text string, payload any) error {
+	// An empty listing has nothing to print; a blank line on stdout would be
+	// read as one empty row.
+	if text == "" && s.cfg.Format != session.FormatJSON {
+		return nil
+	}
+
 	return s.cfg.Result(text, payload)
 }
 
 // Structured reports whether the result is requested as JSON.
 func (s listSession) Structured() bool {
 	return s.cfg.Format == session.FormatJSON
+}
+
+// CommandList renders the command listing, in colour and cut to the width when
+// the result goes to a terminal.
+func (s listSession) CommandList(rows []listcontent.ListedCommand) string {
+	style := output.ListStyle{}
+
+	if file, ok := streams.Out.(*os.File); ok {
+		style.Color = terminal.ColorEnabled(file)
+		style.Width = terminal.Width(file)
+	}
+
+	return output.CommandList(rows, style)
 }
 
 // HistoryTable renders the operation log.
@@ -179,4 +208,7 @@ func init() {
 	listCmd.Flags().BoolVar(&systemFlag, "system", false, "list all system variables")
 	listCmd.Flags().BoolVar(&sysPathFlag, "syspath", false, "list path system variable")
 	listCmd.Flags().Bool(flagJSON, false, "print the result as one JSON object")
+	listCmd.Flags().StringVarP(&listGroup, "group", "g", "", "only the commands of this group")
+	listCmd.Flags().StringVarP(&listSort, "sort", "s", "", "order: name, runs (most used first) or recent")
+	_ = listCmd.RegisterFlagCompletionFunc("sort", cobra.FixedCompletions(listcontent.Sorts, cobra.ShellCompDirectiveNoFileComp))
 }

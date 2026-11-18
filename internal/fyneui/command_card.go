@@ -3,6 +3,8 @@
 package fyneui
 
 import (
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
@@ -29,8 +31,27 @@ func (u *ui) newCommandCard(command catalog.Command) *commandCard {
 		return u.buildCommandBody(card)
 	})
 	card.header.OnTapped = func() { u.toggleCommandCard(card) }
+	card.header.setDetail(commandPreview(command))
 
 	return card
+}
+
+// commandPreview is the collapsed card's caption: the line the command runs
+// (its steps joined), then its aliases, so a closed card already says what it
+// does.
+func commandPreview(command catalog.Command) string {
+	line := command.Exec
+	if len(command.Steps) > 0 {
+		line = strings.Join(command.Steps, " && ")
+	}
+
+	line = strings.Join(strings.Fields(line), " ")
+
+	if len(command.Aliases) > 0 {
+		line += "  ·  aka " + strings.Join(command.Aliases, ", ")
+	}
+
+	return line
 }
 
 // buildCommandBody builds the fields, the parameter entry and the actions on

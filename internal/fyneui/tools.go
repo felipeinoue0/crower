@@ -33,6 +33,20 @@ func (u *ui) toolsTab() fyne.CanvasObject {
 	)))
 }
 
+// toolLabels are every key the Tools forms use. The widest sets one label
+// column for all of them, so the fields of neighbouring cards line up.
+var toolLabels = []string{"Sources", "Destination", "Term", "Path", "Look in", "Archives", "Into", "Paths"}
+
+// toolForm is a Tools card's form, with the shared label column.
+func toolForm(rows []formRow) *fyne.Container {
+	width := float32(0)
+	for _, text := range toolLabels {
+		width = max(width, formLabel(text).MinSize().Width)
+	}
+
+	return newFormGridWidth(rows, width)
+}
+
 // browseButton is the "pick it instead of typing it" control beside a path
 // field. Fyne's dialog is single-select, so each press adds one path.
 func browseButton(pick func()) *appButton {
@@ -69,7 +83,7 @@ func (u *ui) transferCard() fyne.CanvasObject {
 		})
 	})
 
-	form := newFormGrid([]formRow{
+	form := toolForm([]formRow{
 		{"Sources", fieldWithBrowse(u.sourcesEntry, func() { u.browseFiles(u.sourcesEntry) })},
 		{"Destination", fieldWithBrowse(destination, func() { u.browseFolder(destination) })},
 	})
@@ -114,7 +128,7 @@ func (u *ui) searchCard() fyne.CanvasObject {
 		})
 	})
 
-	form := newFormGrid([]formRow{
+	form := toolForm([]formRow{
 		{"Term", term},
 		{"Path", fieldWithBrowse(path, func() { u.browseFolder(path) })},
 		{"Look in", mode},
@@ -171,7 +185,7 @@ func (u *ui) extractCard() fyne.CanvasObject {
 		})
 	})
 
-	form := newFormGrid([]formRow{
+	form := toolForm([]formRow{
 		{"Archives", fieldWithBrowse(archives, func() { u.browseFiles(archives) })},
 		{"Into", fieldWithBrowse(outDir, func() { u.browseFolder(outDir) })},
 	})
@@ -206,7 +220,7 @@ func (u *ui) openCard() fyne.CanvasObject {
 		"Open",
 		"Open paths with the platform's default application.",
 		container.NewVBox(
-			fieldWithBrowse(paths, func() { u.browseFiles(paths) }),
+			toolForm([]formRow{{"Paths", fieldWithBrowse(paths, func() { u.browseFiles(paths) })}}),
 			actionRow(openButton),
 			u.openResult.object(),
 		),

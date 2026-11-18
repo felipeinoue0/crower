@@ -103,12 +103,30 @@ func commandDialogPreview() fyne.CanvasObject {
 }
 
 func TestScreenshots(t *testing.T) {
+	capturePages(t, "")
+}
+
+// TestScreenshotsLight captures the same pages in the light variant: a page can
+// be broken in one theme and fine in the other.
+func TestScreenshotsLight(t *testing.T) {
+	forceLight = true
+	t.Cleanup(func() { forceLight = false })
+
+	capturePages(t, "-light")
+}
+
+func capturePages(t *testing.T, suffix string) {
+	t.Helper()
+
 	size := fyne.NewSize(960, 720)
 
 	// Commands: the toolbar rows and an opened card's actions.
 	front, _ := commandUI(t, stubExecutor{}, []catalog.Command{
 		{Name: "greet", Exec: "echo hi", Icon: "🚀", Group: "deploy", Aliases: []string{"hi"}},
 		{Name: "deploy", Exec: "make deploy", Icon: "📦", Group: "deploy"},
+		{Name: "build-release", Icon: "🏷️", Aliases: []string{"rel", "ship"}, Steps: []string{
+			"git fetch --tags origin", "go test ./...", "gh workflow run release.yml --ref main -f version={1} -f publish=true",
+		}},
 	})
 
 	for _, card := range front.commandCards {
@@ -119,7 +137,7 @@ func TestScreenshots(t *testing.T) {
 	}
 
 	dumpButtons(t, "commands", front.window.Canvas().Content())
-	captureShot(t, front.window.Canvas().Content(), "commands", size)
+	captureShot(t, front.window.Canvas().Content(), "commands"+suffix, size)
 
 	// History: an opened entry's actions.
 	note := notes.ExecuteCommandNote(catalog.Command{Name: "greet", Exec: "echo hi"}, []string{"a b"})
@@ -130,12 +148,12 @@ func TestScreenshots(t *testing.T) {
 	}
 
 	dumpButtons(t, "history", hist.window.Canvas().Content())
-	captureShot(t, hist.window.Canvas().Content(), "history", size)
+	captureShot(t, hist.window.Canvas().Content(), "history"+suffix, size)
 
 	// Tools: the card actions and Browse cells.
 	tools, _ := commandUI(t, stubExecutor{}, nil)
 	tools.tabs.SelectIndex(2)
-	captureShot(t, tools.window.Canvas().Content(), "tools", size)
+	captureShot(t, tools.window.Canvas().Content(), "tools"+suffix, size)
 
 	// About: the update actions, Install revealed and Restore present.
 	front, window := newTestUIWithUpdater(t, testModel(), stubEditor{}, stubReverter{},
@@ -145,12 +163,12 @@ func TestScreenshots(t *testing.T) {
 	front.applyLatest("v0.20.27", nil)
 	front.tabs.SelectIndex(3)
 	dumpButtons(t, "about", window.Canvas().Content())
-	captureShot(t, window.Canvas().Content(), "about", size)
+	captureShot(t, window.Canvas().Content(), "about"+suffix, size)
 
 	// A dialog footer at dialog size.
 	dialogPreview := commandDialogPreview()
 	dialogWindow := test.NewWindow(dialogPreview)
 	dialogWindow.Resize(fyne.NewSize(760, 560))
 	dumpButtons(t, "dialog", dialogWindow.Canvas().Content())
-	captureShot(t, dialogPreview, "dialog", fyne.NewSize(760, 560))
+	captureShot(t, dialogPreview, "dialog"+suffix, fyne.NewSize(760, 560))
 }

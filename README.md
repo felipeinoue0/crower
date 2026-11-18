@@ -5,8 +5,8 @@
 <h1 align="center">crower</h1>
 
 <p align="center">
-  <strong>A cross-platform terminal file manager and command-alias manager</strong><br>
-  <em>Shortcut any command, automate workflows, and share them with your team</em>
+  <strong>One alias manager for every shell — with history, undo and a window.</strong><br>
+  <em>Save a command once. Run it by name in bash, zsh, fish, PowerShell or cmd.</em>
 </p>
 
 <p align="center">
@@ -15,350 +15,293 @@
   <a href="https://github.com/fiwon123/crower/blob/main/LICENSE"><img src="https://img.shields.io/github/license/fiwon123/crower" alt="License"></a>
 </p>
 
+<p align="center">
+  <a href="#-quick-start">Quick start</a> ·
+  <a href="#-installation">Install</a> ·
+  <a href="#-shell-integration">Shell integration</a> ·
+  <a href="#-everyday-use">Everyday use</a> ·
+  <a href="https://github.com/fiwon123/crower/wiki">Wiki</a>
+</p>
+
 ---
 
-## Table of Contents
+```console
+$ crower create deploy "ssh prod 'cd /app && git pull && systemctl restart app'" -a d --icon 🚀
+$ deploy                      # a real command in your shell — no prefix
+$ crower list
+#  NAME       ALIASES  GROUP  RUNS  LAST RUN  COMMAND
+0  🚀 deploy  d        ops      12  2h ago    ssh prod 'cd /app && git pull && systemctl restart app'
+1  👋 greet   hi                 3  just now  echo hello {1}
+$ cr                          # nothing else? a fuzzy finder opens — type, ↑↓, Enter
+```
 
-- [🔖 Why crower?](#-why-crower)
-- [🚀 Quick start](#-quick-start)
-- [📦 Installation](#-installation)
-- [🍳 Usage recipes](#-usage-recipes)
-- [📖 Commands](#-commands)
-- [🧩 Scripting](#-scripting)
-- [🤝 Sharing crower files](#-sharing-crower-files)
-- [⚙️ Configuration](#-configuration)
-- [🛠️ Development](#-development)
-- [📚 Documentation](#-documentation)
-- [💬 Contributing](#-contributing)
-- [⚠️ What is not proven](#-what-is-not-proven)
-- [📄 License](#-license)
+## ✨ Why crower
 
-## 🔖 Why crower?
-
-Tired of retyping long, complex commands? Need to remember obscure CLI incantations? **crower** lets you:
-
-- **🔖 Shortcut anything** - Turn any shell command into a memorable alias
-- **⚡ Run multi-step workflows** - Chain multiple commands together with automatic error handling
-- **🔗 Nest commands** - Call crower commands from within other crower commands with recursion protection
-- **📝 Add context** - Attach notes to your commands and track history
-- **↩️ Undo anything** - Full history with revert capability
-- **📁 Manage files** - Create, copy, move, open files and folders with simple commands
-- **🔍 Search** - Find files/folders or search the web instantly
-- **📦 Share workflows** - Export and import crower files, or download from a registry
-- **🧠 Smart execution** - Proper parameter quoting, placeholders (`{1}`, `{2}`, `{}`), multi-step chains, and safe execution
+| | |
+|---|---|
+| 🐚 **Native in every shell** | `deploy`, not `cr deploy` — one hook for bash, zsh, fish, PowerShell and cmd, with tab completion. |
+| 📥 **Bring what you have** | `crower import --from-shell` reads the aliases already in your `.bashrc`, `.zshrc`, fish config or PowerShell profile. |
+| 🔎 **Find it again** | Search, groups, icons, run counts — and a fuzzy finder when you only remember half a name. |
+| ⚡ **Runs like you typed it** | Attached to your terminal: `ssh`, `vim`, prompts and colours just work. `--dry-run` shows the line first. |
+| 🧠 **Parameters and steps** | `{1}`, `{2}`, `{}` placeholders, quoted safely; multi-step commands with a folder, shell, env and timeout. |
+| ↩️ **Undo anything** | Every change is recorded. `crower revert` steps back; `crower restore` brings a command back. |
+| 🖥️ **A window too** | `crower-gui` — the same commands, history and file tools in a desktop window, light or dark. |
+| 🌍 **Everywhere** | Linux, macOS and Windows, amd64 and arm64. One static binary for the CLI. |
 
 ## 🚀 Quick start
 
 ```bash
-# Create a shortcut for a complex command
-crower create deploy "ssh user@server 'cd /app && git pull && systemctl restart app'"
+# 1. Install (Linux / macOS) — Windows: see Installation below
+curl -fsSL https://raw.githubusercontent.com/fiwon123/crower/main/scripts/install.sh | sh
 
-# Run it by name or alias
-crower deploy
-# or
-cr deploy
+# 2. Hook it into your shell: PATH, native aliases, tab completion
+crower init --apply          # then open a new terminal
 
-# Create with aliases
-crower create backup -a bkp "tar -czf backup.tar.gz ~/important-data"
-cr bkp
+# 3. Bring your existing aliases, or create new ones
+crower import --from-shell
+crower create greet "echo Hello {1}!" --alias hi
 
-# Run with parameters
-crower create greet "echo Hello {1}, welcome to {2}!"
-cr greet John Developer
+# 4. Run them by name
+hi Ada                       # → Hello Ada!
 ```
 
 ## 📦 Installation
 
-### One command (Linux / macOS)
+### 🐧 Linux · 🍎 macOS — one command
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/fiwon123/crower/main/scripts/install.sh | sh
 ```
 
-It resolves the newest release, verifies the archive against the release's
-`checksums.txt`, and installs `crower` and `cr` into `~/.local/bin`. Pin a
-version or a directory with `sh -s -- --version v0.8.0 --dir ~/.local/bin`.
-Then `crower init --apply` puts the directory on your PATH.
+It picks the newest release, verifies it against `checksums.txt`, and installs
+`crower` and `cr` into `~/.local/bin`. Pin a version or a folder with
+`sh -s -- --version v0.21.0 --dir ~/.local/bin`.
 
-### Download a release (any platform)
+### 🪟 Windows
 
-Download the latest release for your platform from the [releases page](https://github.com/fiwon123/crower/releases).
+Download `crower_<tag>_windows_amd64.zip` (or `_arm64`) from the
+[releases page](https://github.com/fiwon123/crower/releases), extract it, and run
+`add_to_path.bat` from the extracted folder. Double-click **`crower-gui.exe`**
+for the window. Then, in PowerShell:
 
-Archives are named `crower_<tag>_<os>_<arch>` — for example
-`crower_v0.4.0_linux_amd64.tar.gz`. Every archive contains `crower`, `cr` and
-`crower-gui`, with no architecture suffix. Replace `v0.4.0` below with the tag
-you are installing.
+```powershell
+crower init --apply          # adds the hook to your $PROFILE
+```
 
-**Linux** (swap `linux_amd64` for `linux_arm64`, `darwin_amd64` or
-`darwin_arm64` on another platform):
+### 📥 Any platform — from a release archive
+
+Archives are named `crower_<tag>_<os>_<arch>` and contain `crower`, `cr` and
+`crower-gui`. Swap `linux_amd64` for `linux_arm64`, `darwin_amd64` or `darwin_arm64`:
 
 ```bash
-VERSION=v0.8.0
+VERSION=v0.21.0
 curl -LO "https://github.com/fiwon123/crower/releases/download/$VERSION/crower_${VERSION}_linux_amd64.tar.gz"
 tar -xzf "crower_${VERSION}_linux_amd64.tar.gz"
-chmod +x crower cr crower-gui
 sudo mv crower cr crower-gui /usr/local/bin/
 ```
 
-Without `sudo`: the archive also ships `add_to_path.sh`, which adds the
-directory it lives in to the config file of the shell you are running. Extract
-it next to the binaries and run `./add_to_path.sh`.
+No `sudo`? Run `./add_to_path.sh` from the extracted folder instead.
 
-**Windows:** extract `crower_<tag>_windows_amd64.zip` (or `..._arm64.zip`), then
-either run `add_to_path.bat` from the extracted folder or add the folder
-containing `crower.exe`, `cr.exe` and `crower-gui.exe` to your PATH.
-`crower.exe` and `cr.exe` are terminal programs; **double-click
-`crower-gui.exe`** (the one with the crow icon) to open the window, with no
-console behind it.
-
-Verify either install with `crower --version`.
-
-### Build from source
+### 🛠️ From source
 
 ```bash
-git clone https://github.com/fiwon123/crower.git
-cd crower
-go build -o crower .
-./crower --help
-
-# short alias, then put both binaries on your PATH
-cp crower cr
-sudo mv crower cr /usr/local/bin/
+git clone https://github.com/fiwon123/crower.git && cd crower
+go build -o crower . && cp crower cr      # Go 1.25.4+
 ```
 
-`make help` lists every target: `make release` builds the Windows and Linux
-release archives into `build/`, and `make check` runs the local gate — gofmt,
-vet, test and build.
+Check any install with `crower --version`. Update in place with `crower --upgrade`.
 
-**Requirements:** Go 1.25.4 or later
+## 🐚 Shell integration
 
-## 🍳 Usage recipes
+One line in your startup file makes every crower command a command of its own,
+keeps it in sync when you create or delete one, and turns on tab completion.
+`crower init --apply` writes it for you; to do it by hand:
 
-### 🛠️ Development workflow
+| Shell | Add to | Line |
+|---|---|---|
+| bash | `~/.bashrc` | `eval "$(crower init bash)"` |
+| zsh | `~/.zshrc` | `eval "$(crower init zsh)"` |
+| fish | `~/.config/fish/config.fish` | `crower init fish \| source` |
+| PowerShell | `$PROFILE` | `crower init powershell \| Out-String \| Invoke-Expression` |
+| cmd.exe | doskey macros | `crower init cmd > %USERPROFILE%\crower.doskey` then `doskey /macrofile=%USERPROFILE%\crower.doskey` |
+
+- 🛡️ **Never shadows anything.** A name your shell already knows — a program on
+  `PATH`, a builtin, your own alias — is skipped, so crower can't hide `git` or `cd`.
+- 🔄 **Always current.** `crower create`, `update`, `delete`, `import`, `revert`…
+  re-sync the aliases in the shell you ran them from.
+- ⌨️ **Completes names.** `cr dep<Tab>` and `crower delete <Tab>` offer your commands
+  with their descriptions.
+- ⚡ **Cheap.** One process at shell start, a few milliseconds.
+
+## 🧭 Everyday use
+
+### ➕ Create and organise
+
 ```bash
-# Create shortcuts for common dev tasks
-crower create test "go test ./..."
 crower create build "go build ./..."
-crower create lint "golangci-lint run"
-crower create deploy "git push && ssh prod 'cd app && git pull && systemctl restart app'"
-
-# Run your workflow
-cr test && cr build
+crower create test "go test ./..." --alias t --group dev --icon 🧪
+crower create seek "grep -rn {1} {2}" --description "search code" --params pattern,path
+crower update test --exec "go test -race ./..."
+crower delete build
 ```
 
-### Multi-step automation
+### 📥 Import your shell aliases
+
 ```bash
-# Create a command with multiple steps (separated by newlines in exec)
-crower create release "echo 'Building...'\ngo build -o app .\necho 'Testing...'\ngo test ./...\necho 'Done!'"
-cr release
+crower import --from-shell --dry-run      # see what it found
+crower import --from-shell                # bash, zsh, fish and PowerShell files
+alias | crower import --from-shell -      # or pipe the output of `alias`
 ```
 
-### File management made easy
+Files are read, never executed. Importing twice changes nothing.
+
+### 🔎 Find and run
+
 ```bash
-# Create files and folders
-crower create project -f  # creates file
-crower create src -o     # creates folder
-
-# Copy and move
-crower copy file.txt ./backup/
-crower move old.txt ./archive/
-
-# Open files/folders
-crower open -f README.md
-crower open -o ./src
+crower list                    # every command, with runs and last run
+crower list docker             # search name, alias, line, description, group
+crower list -g dev -s runs     # one group, most used first
+cr                             # fuzzy finder: type, ↑↓, Enter
+seek TODO internal/            # run by name (with the shell hook)
+crower seek TODO . --dry-run   # print the expanded line, run nothing
 ```
 
-### History and undo
+### 🧠 Parameters and multi-step commands
+
+`{1}`, `{2}` are positional, `{}` takes the rest, and every value is quoted
+before it reaches the shell. With no placeholder, arguments are appended — like
+a shell alias.
+
 ```bash
-# View history
-cr list -i
-
-# Revert last N operations
-cr revert 2
-
-# Restore a deleted command
-cr restore <key>
+crower create greet "echo Hello {1}, welcome to {2}!"
+greet Ada "the team"           # Hello Ada, welcome to the team!
 ```
 
-## 📖 Commands
+Chain with `&&`, or give a command `Steps` in the configuration file; each step
+runs in the command's folder, shell, env and timeout:
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `gui` | Launch interactive TUI GUI | `crower gui` |
-| `create` | Create a command, file, folder, or script | `crower create name "command"` |
-| `update` | Update existing commands or last operation | `crower update -n oldname -n newname` |
-| `delete` | Delete commands, files, folders, or history | `crower delete name` |
-| `list` | List commands, history, processes, or files | `crower list` or `cr list -i` |
-| `execute` | Execute stored commands | `crower execute name` or just `cr name` |
-| `open` | Open files, folders, or system settings | `crower open -f file.txt` |
-| `copy`/`move` | Copy or move files and folders | `crower copy src dst` |
-| `search` | Search files or web | `crower search -f pattern` |
-| `extract` | Extract archives | `crower extract archive.tar.gz` |
-| `revert` | Revert history | `crower revert 1` |
-| `restore` | Restore from history | `crower restore <key>` |
-| `reset` | Reset all commands | `crower reset` |
-| `export` | Export commands to share | `crower export` or `crower export name` |
-| `import` | Import commands from file | `crower import pack.toml` |
-| `share` | Browse and pull from registry | `crower share list` or `cr share pull pack` |
-| `setup` | Manage named command sets | `crower setup use streamer` |
-| `init` | Put the install directory on PATH | `crower init --apply` |
-| `doctor` | Show paths, permissions and environment | `crower doctor --json` |
+```toml
+[release]
+Steps   = ["go test ./...", "go build -o app .", "./app --version"]
+Cwd     = "~/projects/app"
+Timeout = "5m"
+```
 
-Use `crower <command> --help` for detailed options.
+### ↩️ History and undo
 
-Every archive contains `crower`, the `cr` alias and `crower-gui`, the Fyne
-window over the same configuration. The CLI binaries are cgo-free and need no
-display; `crower gui` is the terminal menu.
+```bash
+crower list --history          # everything crower did, newest first
+crower revert 2                # undo the last two operations
+crower restore deploy          # bring back a deleted command
+```
+
+### 🗂️ Files and folders
+
+```bash
+crower create --file notes.txt && crower create --folder reports
+crower copy notes.txt ~/backup && crower move old.txt archive/
+crower open --folder . && crower extract release.tar.gz
+crower search report ./notes
+```
+
+## 🖥️ The window
+
+`crower-gui` (or double-click it) opens the same commands in a desktop window:
+search and group them, run with parameters, edit, browse and restore the
+history, copy/move/search/extract files, and update crower — in light or dark.
+`crower gui` is the keyboard menu for a terminal without a display.
 
 ## 🧩 Scripting
 
-crower is meant to be called from a script as well as typed by hand.
-
-- **Results go to stdout, diagnostics to stderr.** `crower list` writes the
-  table and nothing else to stdout; prompts, status lines, warnings and errors
-  go to stderr, so piping the results never picks them up.
-- **The exit status says whether the work happened.** `0` means it did — or that
-  you answered *no* to a confirmation, because declining is a choice. `1` means
-  it did not, and the reason is one line on stderr: `error: ...`.
-- **A prompt never waits forever.** With `--no-input`, or with stdin closed, a
-  command that needs an answer fails with a message instead of asking again.
+- 📤 **Results on stdout, diagnostics on stderr** — piping never picks up prompts.
+- ✅ **Exit status says whether the work happened** — `1` with one `error:` line when it didn't.
+- 🚫 **Never hangs** — `--no-input` (or closed stdin) fails instead of prompting.
+- 🧾 **JSON** — `crower list --json`, `crower list -i --json`, `crower doctor --json`.
 
 ```bash
-# Take the result and leave the status lines behind
-greeting="$(crower execute greet)"
-
-# Fail the script when the delete did not happen, without a prompt to block it
 crower --no-input delete old-command || exit 1
+crower list --json | jq -r '.commands[] | select(.runs > 10) | .name'
 ```
 
-`--config <path>` points a run at another configuration file, which is how a
-script uses its own set of commands without touching your personal one.
+`--config <path>` points a run at another command file, so a script can carry
+its own set.
 
-## 🤝 Sharing crower files
+## 🤝 Sharing
 
-**Build once, share everywhere.** Perfect for onboarding, CI setups, or sharing workflows with your team.
-
-### Export your workflows
 ```bash
-# Export all commands
-crower export -o my-workflows.toml
-
-# Export a specific command
-crower export deploy -o deploy.toml
+crower export -o team.toml                 # all commands (or: crower export deploy)
+crower import team.toml                    # merge, asking on conflicts
+crower share list && crower share pull docker-setup   # from a registry
 ```
 
-### Import workflows
-```bash
-# Import from a file
-crower import my-workflows.toml
-
-# Import and overwrite conflicts
-crower import my-workflows.toml --overwrite
-```
-
-### Pull from a registry
-```bash
-# Browse available packs
-crower share list
-
-# Pull and install a pack
-crower share pull docker-setup
-```
-
-**Registry Protocol:** Any HTTP server can host crower packs using the simple manifest protocol (`index.json` + `packs/<name>.toml`). Check the [crower-resources](https://github.com/fiwon123/crower-resources) repo for examples.
+A registry is any HTTP server with `index.json` + `packs/<name>.toml` — see
+[crower-resources](https://github.com/fiwon123/crower-resources).
 
 ## ⚙️ Configuration
 
-Crower stores data in `~/crower/` by default:
-- `crower.yaml` - Your stored commands (TOML format)
-- `historyhelper.json` - Operation history
-- `history/` - Command snapshots for revert/restore
-- `crower.log` - Execution logs
-- `versions.json` - The last installed versions, read by `--rollback`
-- `settings.json` - `update_check` (`daily`, `weekly` or `never`), and when the
-  periodic notice last looked
+Everything lives in `~/crower/`: `crower.yaml` (your commands, TOML),
+`history/` and `historyhelper.json` (undo), `crower.log`, `settings.json`
+(`update_check`: `daily`, `weekly` or `never`). Override with `--config`.
 
-Override with `--config /path/to/config.yaml`.
-
-Named setups keep separate command sets **and separate history**:
+**Setups** keep separate command sets with separate history — work, home, a
+stream:
 
 ```bash
-crower --setup streamer create obs "obs"     # ~/crower/setups/streamer/
+crower --setup streamer create obs "obs"
 CROWER_SETUP=streamer crower list
-crower --setup streamer revert 1             # only this setup's history
 ```
+
+`crower doctor` shows every path, permission and setting crower depends on.
 
 ## 🛠️ Development
 
 ```bash
-# The local gate: gofmt, vet, go test, go build
-make check
-
-# Run tests only
-go test ./...
-
-# Build for all platforms
-make release
-
-# Run from source
+make check          # the local gate: gofmt, vet, test, build
+make release        # Windows and Linux release archives into build/
+make help           # every target
 go run ./ --help
 ```
 
-See [AGENTS.md](AGENTS.md) and [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) for architecture details.
-
-The dev sandbox runs the same pinned Go toolchain on every machine:
-`make dev-up` (or `docker compose up` on any OS with Docker). Native Windows
-uses `python scripts/dev-up.py dev-up`. Run `make help` for every target.
+`make dev-up` (or `docker compose up`) starts a sandbox with the pinned Go
+toolchain; on native Windows use `python scripts/dev-up.py dev-up`. Architecture
+and conventions: [AGENTS.md](AGENTS.md) · [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 
 ## 📚 Documentation
 
 | I want to… | Read |
 |---|---|
-| see real recipes | [Usage recipes](#-usage-recipes) |
-| look up a command or flag | [Command reference](https://github.com/fiwon123/crower/wiki/Command-Reference) |
-| script against crower | [Scripting](#-scripting) |
-| browse the wiki | [crower wiki](https://github.com/fiwon123/crower/wiki) |
-| see what is planned | [Roadmap board](https://github.com/users/fiwon123/projects/5) |
-| understand the code layout | [Architecture](https://github.com/fiwon123/crower/wiki/Architecture) · [AGENTS.md](AGENTS.md) · [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) |
-| help prove a claim | [Verifying claims](https://github.com/fiwon123/crower/wiki/Verifying-claims) |
+| 🐚 set up my shell | [Shell integration](https://github.com/fiwon123/crower/wiki/Shell-Integration) |
+| 📖 look up a command or flag | [Command reference](https://github.com/fiwon123/crower/wiki/Command-Reference) |
+| 🍳 copy a working example | [Recipes](https://github.com/fiwon123/crower/wiki/Recipes) |
+| 🧩 script against crower | [Scripting](https://github.com/fiwon123/crower/wiki/Scripting) |
+| 🚑 fix something | [Troubleshooting](https://github.com/fiwon123/crower/wiki/Troubleshooting) |
+| 🏛️ understand the code | [Architecture](https://github.com/fiwon123/crower/wiki/Architecture) |
+| 🎯 see what's planned | [Roadmap board](https://github.com/users/fiwon123/projects/5) |
 
 ## 💬 Contributing
 
-Issues, ideas, questions and pull requests are welcome — see
-[CONTRIBUTING.md](CONTRIBUTING.md). One feature per pull request. Say what ran
-and what did not, and do not describe a skipped check as a pass.
-
-The most useful contribution right now is **running the unproven parts on real
-hardware** — see [What is not proven](#-what-is-not-proven).
+Issues, ideas and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+One feature per pull request; say what ran and what did not.
 
 ## ⚠️ What is not proven
 
-This project says what it verified. CI formats, vets, tests and builds on
-Linux/amd64, then cross-compiles six archives on the same runner — no gate
-executes what it built.
+This project says what it verified. CI tests and builds on Linux/amd64 and
+cross-compiles the rest — no gate executes the other builds.
 
-- **The macOS build runs** — the darwin archives are never executed, and shell-backed operations are reported broken ([#129](https://github.com/fiwon123/crower/issues/129)).
-- **The Windows build runs** — cross-compiled on Linux, never started.
-- **The arm64 builds run** — built, never executed on ARM hardware.
-- **The TUI and Fyne GUI render** — no gate draws a window; the tests assert the model, not pixels.
-- **History and revert across a real session** — the suite uses isolated temp directories, not a day of real use.
+- 🍎 **macOS** and 🪟 **Windows** builds are cross-compiled, never started by CI
+  (macOS shell operations: [#129](https://github.com/fiwon123/crower/issues/129)).
+- 💪 **arm64** builds are never executed on ARM hardware.
+- 🐟 **fish, PowerShell and cmd hooks** are unit-tested for shape; bash and zsh
+  were run in real sessions.
+- ⌨️ **The fuzzy finder on Windows** uses the console's VT input mode, untested
+  on a real console.
 
-Running the program and reporting exactly what happened — including "it worked"
-— is the most useful contribution right now. The steps for each claim, and what
-to record, are on the wiki's
-[Verifying claims](https://github.com/fiwon123/crower/wiki/Verifying-claims) page.
+Running it and reporting what happened — "it worked" included — is the most
+useful contribution right now: [Verifying claims](https://github.com/fiwon123/crower/wiki/Verifying-claims).
 
 ## 📄 License
 
-**crower is MIT licensed** — see [LICENSE](LICENSE).
-
-The release archives also carry two files that are not crower's licence:
-
-- [NOTICE](NOTICE) — attribution for the Apache-2.0 dependencies compiled into
-  the binary (`spf13/cobra`, `minio/selfupdate`, `hajimehoshi/ebiten`);
-- [LICENSE-APACHE](LICENSE-APACHE) — the Apache License 2.0 text those
-  dependencies require to travel with a distribution.
-
-A dependency's licence does not change this project's: your MIT grant is the only
-one you need for crower's own code, and the Apache files exist so the bundled
-libraries arrive with the notices they are owed.
+**MIT** — see [LICENSE](LICENSE). The archives also carry [NOTICE](NOTICE)
+(attribution for bundled dependencies) and [LICENSE-APACHE](LICENSE-APACHE),
+which the Apache-2.0 dependencies require to travel with a distribution; they do
+not change crower's own licence.

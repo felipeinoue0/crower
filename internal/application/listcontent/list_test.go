@@ -2,6 +2,7 @@ package listcontent_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"slices"
 	"strings"
@@ -47,10 +48,23 @@ type fakeOutput struct {
 	structured bool
 	emitted    []emitted
 	emitErr    error
+	listed     [][]listcontent.ListedCommand
+	infos      []string
 }
 
 func (o *fakeOutput) Table(catalog.Catalog) string {
 	return o.table
+}
+
+// CommandList returns the table text, so a test that checks the text keeps
+// working, and remembers the rows it was given.
+func (o *fakeOutput) CommandList(rows []listcontent.ListedCommand) string {
+	o.listed = append(o.listed, rows)
+	return o.table
+}
+
+func (o *fakeOutput) Info(message string, data ...any) {
+	o.infos = append(o.infos, fmt.Sprint(append([]any{message}, data...)...))
 }
 
 func (o *fakeOutput) Emit(text string, payload any) error {
@@ -493,5 +507,115 @@ func TestListUnknownMode(t *testing.T) {
 
 	if len(h.output.emitted) != 0 || len(h.state.records) != 0 {
 		t.Error("an unknown mode did work")
+	}
+}
+
+func usageHarness() *harness {
+	h := newHarness()
+	h.state.commands = catalog.New(
+		[]string{"greet", "build", "deploy"},
+		[]catalog.Command{
+			{Name: "greet", Aliases: []string{"yo"}, Exec: "echo hello", Group: "fun"},
+			{Name: "build", Exec: "go build ./...", Group: "work"},
+			{Name: "deploy", Exec: "ssh prod", Description: "ship the build", Group: "Work"},
+		},
+	)
+	h.hist.rows = []listcontent.HistoryRow{
+		{Operation: "execute", Command: "deploy", Timestamp: "2026-11-18T10:00:00Z"},
+		{Operation: "execute", Command: "build", Timestamp: "2026-11-18T09:00:00Z"},
+		{Operation: "execute", Command: "build", Timestamp: "2026-11-17T09:00:00Z"},
+		{Operation: "create", Command: "greet", Timestamp: "2026-11-18T11:00:00Z"},
+	}
+
+	return h
+}
+
+// names is the order the command listing was rendered in.
+func (h *harness) names(t *testing.T) []string {
+	t.Helper()
+
+	if len(h.output.listed) != 1 {
+		t.Fatalf("listed %d times, want 1", len(h.output.listed))
+	}
+
+	var out []string
+	for _, row := range h.output.listed[0] {
+		out = append(out, row.Command.Name)
+	}
+
+	return out
+}
+
+func TestListCommandsSearchGroupSort(t *testing.T) {
+	tests := []struct {
+		name    string
+		request listcontent.Request
+		want    []string
+	}{
+		{"saved order", listcontent.Request{}, []string{"greet", "build", "deploy"}},
+		{"search name", listcontent.Request{Args: []string{"dep"}}, []string{"deploy"}},
+		{"search alias", listcontent.Request{Args: []string{"YO"}}, []string{"greet"}},
+		{"search description", listcontent.Request{Args: []string{"build"}}, []string{"build", "deploy"}},
+		{"group ignores case", listcontent.Request{Group: "work"}, []string{"build", "deploy"}},
+		{"by name", listcontent.Request{Sort: "name"}, []string{"build", "deploy", "greet"}},
+		{"by runs", listcontent.Request{Sort: "runs"}, []string{"build", "deploy", "greet"}},
+		{"by recent", listcontent.Request{Sort: "recent"}, []string{"deploy", "build", "greet"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := usageHarness()
+			tt.request.Mode = listcontent.ModeCommands
+
+			if err := h.run(tt.request); err != nil {
+				t.Fatalf("Run: %v", err)
+			}
+
+			if got := h.names(t); !slices.Equal(got, tt.want) {
+				t.Errorf("order = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// Runs and the last run come from the execute entries only, and reach the
+// JSON result; rows keep their saved index after filtering.
+func TestListCommandsUsage(t *testing.T) {
+	h := usageHarness()
+
+	if err := h.run(listcontent.Request{Mode: listcontent.ModeCommands, Args: []string{"build"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	result := h.output.emitted[0].payload.(listcontent.CommandsResult)
+
+	if len(result.Commands) != 2 {
+		t.Fatalf("rows = %+v", result.Commands)
+	}
+
+	build := result.Commands[0]
+	if build.Name != "build" || build.Row != 1 || build.Runs != 2 || build.LastRun != "2026-11-18T09:00:00Z" {
+		t.Errorf("build = %+v", build)
+	}
+
+	greet := listcontent.Usage(h.hist.rows)["greet"]
+	if greet.Runs != 0 {
+		t.Errorf("a create entry counted as a run: %+v", greet)
+	}
+}
+
+func TestListCommandsNoMatchAndBadSort(t *testing.T) {
+	h := usageHarness()
+
+	if err := h.run(listcontent.Request{Mode: listcontent.ModeCommands, Args: []string{"zzz"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(h.output.listed) != 0 || h.output.emitted[0].text != "" || !slices.Contains(h.output.infos, "No command matches.") {
+		t.Errorf("no match: listed=%v emitted=%+v infos=%v", h.output.listed, h.output.emitted, h.output.infos)
+	}
+
+	if err := usageHarness().run(listcontent.Request{Mode: listcontent.ModeCommands, Sort: "size"}); err == nil {
+		t.Error("an unknown sort was accepted")
 	}
 }

@@ -4,6 +4,7 @@ package fyneui
 
 import (
 	"errors"
+	"image/color"
 	"slices"
 	"strings"
 	"testing"
@@ -131,8 +132,25 @@ func useAppTheme(t *testing.T) {
 	t.Helper()
 
 	app := test.NewApp()
-	app.Settings().SetTheme(newAppTheme())
+
+	var installed fyne.Theme = newAppTheme()
+	if forceLight {
+		installed = lightVariant{installed}
+	}
+
+	app.Settings().SetTheme(installed)
 	t.Cleanup(app.Quit)
+}
+
+// forceLight makes useAppTheme install the light variant, for the light-theme
+// screenshots. The headless app is dark by default.
+var forceLight bool
+
+// lightVariant answers every colour lookup with the light variant.
+type lightVariant struct{ fyne.Theme }
+
+func (l lightVariant) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
+	return l.Theme.Color(name, theme.VariantLight)
 }
 
 func testWindow(t *testing.T) fyne.Window {
@@ -350,8 +368,10 @@ func TestToolbarRowsUseTheBaseGap(t *testing.T) {
 	}
 }
 
-// "New command" sits below the filter row instead of touching it (#495).
-func TestNewCommandClearsTheFilterRow(t *testing.T) {
+// "New command" shares the filter's row: the list's own controls on one line,
+// the button centred on the field and clear of it. #495 asked for air between
+// the two when the button sat under the field; beside it, the base gap does.
+func TestNewCommandSharesTheFilterRow(t *testing.T) {
 	front, _ := commandUI(t, stubExecutor{}, nil)
 
 	var newCommand *appButton
@@ -367,11 +387,18 @@ func TestNewCommandClearsTheFilterRow(t *testing.T) {
 	}
 
 	driver := fyne.CurrentApp().Driver()
-	filterBottom := driver.AbsolutePositionForObject(front.filterEntry).Y + front.filterEntry.Size().Height
-	top := driver.AbsolutePositionForObject(newCommand).Y
+	filter := driver.AbsolutePositionForObject(front.filterEntry)
+	button := driver.AbsolutePositionForObject(newCommand.Button)
 
-	if top <= filterBottom {
-		t.Errorf("New command top = %.1f, want below the filter row (%.1f)", top, filterBottom)
+	filterCentre := filter.Y + front.filterEntry.Size().Height/2
+	buttonCentre := button.Y + newCommand.Size().Height/2
+
+	if diff := buttonCentre - filterCentre; diff < -1 || diff > 1 {
+		t.Errorf("New command centre = %.1f, want the filter's %.1f", buttonCentre, filterCentre)
+	}
+
+	if gap := button.X - (filter.X + front.filterEntry.Size().Width); gap < appPadding {
+		t.Errorf("gap between the filter and New command = %.1f, want at least %v", gap, appPadding)
 	}
 }
 

@@ -5,6 +5,7 @@
 ```bash
 crower export [name] [-o file]
 crower import <file> [--overwrite]
+crower import --from-shell [file|-] [--dry-run]
 crower share list
 crower share pull <pack>
 ```
@@ -15,6 +16,8 @@ crower share pull <pack>
 | --- | --- | --- |
 | `export` | `-o`, `--out` | Output file path |
 | `import` | `--overwrite` | Replace a command with the same name; drop aliases that conflict |
+| `import` | `--from-shell` | Import your shell's aliases instead of a pack |
+| `import` | `-n`, `--dry-run` | With `--from-shell`: list what would be imported, write nothing |
 
 ## 💡 Examples
 
@@ -26,6 +29,27 @@ crower import team.toml --overwrite
 crower share list
 crower share pull docker-setup
 ```
+
+## 🐚 Import your shell aliases
+
+```bash
+crower import --from-shell --dry-run      # what would come in
+crower import --from-shell                # read every startup file
+crower import --from-shell ~/.bash_aliases
+alias | crower import --from-shell -      # the output of `alias`, any shell
+```
+
+With no file, crower **reads — never runs** — the alias definitions in
+`~/.bashrc`, `~/.bash_aliases`, `~/.bash_profile`, `~/.profile`, `~/.zshrc`,
+`~/.zsh_aliases`, fish's `config.fish`, `conf.d/` and saved alias functions, and
+the PowerShell profiles (`Set-Alias` / `New-Alias`). Quoting (`'\''`, double
+quotes), comments, `;` chains and several aliases on one line are understood;
+zsh suffix aliases (`alias -s`) and shell functions are not imported.
+
+An alias crower already has with the same line is skipped, so running it again
+changes nothing. Imported commands land in the group **imported**, with a
+description naming the file they came from. Pair it with the
+[shell hook](Shell-Integration) and the aliases keep working by name.
 
 ## 🔀 Name and alias collisions
 

@@ -111,7 +111,63 @@ func (u *UseCase) Import(path string, overwrite bool) error {
 		return err
 	}
 
-	return u.importPack(pack, overwrite)
+	_, err = u.importPack(pack, overwrite)
+
+	return err
+}
+
+// ImportAliases adds aliases read from the user's shell as commands.
+//
+// An alias crower already has with the same line is skipped without a word, so
+// importing twice changes nothing; any other clash goes through the same
+// rename-or-skip question as a pack. preview shows what would be imported and
+// writes nothing.
+func (u *UseCase) ImportAliases(aliases []catalog.Command, overwrite, preview bool) error {
+	current := u.state.Commands()
+
+	fresh := make([]catalog.Command, 0, len(aliases))
+	unchanged := 0
+
+	for _, alias := range aliases {
+		if existing, found := current.Resolve(alias.Name); found && existing.Exec == alias.Exec && len(existing.Steps) == 0 {
+			unchanged++
+			continue
+		}
+
+		fresh = append(fresh, alias)
+	}
+
+	for _, alias := range fresh {
+		u.output.Info(fmt.Sprintf("  + %-16s %s", alias.Name, alias.Exec))
+	}
+
+	if len(fresh) == 0 {
+		u.output.Result(fmt.Sprintf("Nothing new to import (%d already in crower).", unchanged))
+		return nil
+	}
+
+	if preview {
+		u.output.Result(fmt.Sprintf("Would import %s (%d already in crower). Run again without --dry-run to import them.", aliasCount(len(fresh)), unchanged))
+		return nil
+	}
+
+	added, err := u.importPack(fresh, overwrite)
+	if err != nil {
+		return err
+	}
+
+	u.output.Result(fmt.Sprintf("Imported %s (%d already in crower).", aliasCount(added), unchanged))
+
+	return nil
+}
+
+// aliasCount is "1 alias" or "n aliases".
+func aliasCount(n int) string {
+	if n == 1 {
+		return "1 alias"
+	}
+
+	return fmt.Sprintf("%d aliases", n)
 }
 
 // List writes the registry's pack lines.
@@ -159,14 +215,17 @@ func (u *UseCase) Pull(name string) error {
 		return nil
 	}
 
-	return u.importPack(pack, false)
+	_, err = u.importPack(pack, false)
+
+	return err
 }
 
 // importPack merges the pack into the command set.
 //
 // Nothing is written before the whole pack is staged: a prompt error or a
-// refusal leaves the command set and the file exactly as they were.
-func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
+// refusal leaves the command set and the file exactly as they were. It returns
+// how many commands were imported.
+func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) (int, error) {
 	current := u.state.Commands()
 
 	staged := make([]catalog.Command, 0, len(pack))
@@ -182,7 +241,7 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
 		// a pack carries placeholders, and import must not persist what the
 		// executor would refuse to run.
 		if err := validatePack([]catalog.Command{imported}); err != nil {
-			return err
+			return 0, err
 		}
 
 		originalKey := imported.Name
@@ -219,7 +278,7 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
 
 			rename, err = u.prompt.Confirm(fmt.Sprintf("Command '%s' conflicts with an existing name or alias. Rename it? (no skips this command)", originalKey))
 			if err != nil {
-				return err
+				return 0, err
 			}
 
 			if !rename {
@@ -277,7 +336,7 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
 	}
 
 	if len(staged) == 0 {
-		return nil
+		return 0, nil
 	}
 
 	next := current
@@ -290,7 +349,7 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
 
 		added, err := next.Add(command)
 		if err != nil {
-			return err
+			return 0, err
 		}
 
 		next = added
@@ -299,7 +358,11 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) error {
 	// Persist once, after the whole pack is applied. Import is a bulk setup
 	// and records no history entry: one per imported command would describe
 	// states that never existed.
-	return u.state.Save(next)
+	if err := u.state.Save(next); err != nil {
+		return 0, err
+	}
+
+	return len(staged), nil
 }
 
 // validatePack refuses a pack that would carry a literal the executor refuses.

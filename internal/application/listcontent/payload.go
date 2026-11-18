@@ -26,6 +26,8 @@ type CommandRow struct {
 	Cwd         string            `json:"cwd,omitempty"`
 	Env         map[string]string `json:"env,omitempty"`
 	Timeout     string            `json:"timeout,omitempty"`
+	Runs        int               `json:"runs,omitempty"`
+	LastRun     string            `json:"last_run,omitempty"`
 }
 
 // CommandsResult is the result of `list` and `list --json`.

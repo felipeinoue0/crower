@@ -99,7 +99,7 @@ Every command has its own help: crower <command> --help.`,
 			)
 
 		case len(args) == 0:
-			return cmd.Help()
+			return pickOrHelp(cmd, cfg)
 		}
 
 		session := newExecuteSession(cfg)

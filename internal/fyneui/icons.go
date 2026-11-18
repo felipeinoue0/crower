@@ -60,7 +60,7 @@ func loadEmojiCatalogue() []emojiEntry {
 		}
 
 		emojiCatalogue = make([]emojiEntry, 0, len(raw))
-		drawable := bundledGlyphs()
+		drawable := drawableGlyph()
 
 		for _, entry := range raw {
 			if entry.Emoji == "" || !simpleEmoji(entry.Emoji) || !drawable(entry.Emoji) {
@@ -143,6 +143,25 @@ func bundledGlyphs() func(string) bool {
 
 		return true
 	}
+}
+
+// drawableGlyph is bundledGlyphs parsed once: card headers and group labels
+// ask on every rebuild.
+var drawableGlyph = sync.OnceValue(bundledGlyphs)
+
+// drawableIcon is icon when a bundled font draws it, and "" otherwise.
+//
+// An icon can come from the CLI, an import or an older picker, so it can be a
+// glyph the window would draw as a blank gap before the name. Leaving it out
+// keeps the name on the same left edge as an icon-less one; the stored value
+// is untouched and the terminal still shows it (#547).
+func drawableIcon(icon string) string {
+	icon = strings.TrimSpace(icon)
+	if icon == "" || !drawableGlyph()(icon) {
+		return ""
+	}
+
+	return icon
 }
 
 // filterEmoji returns entries whose name, alias or tag contains query, and
@@ -388,10 +407,16 @@ const emojiButtonTextSize float32 = 24
 func (b *emojiButton) SetEmoji(value string) {
 	b.value = strings.TrimSpace(value)
 
-	if b.value == "" {
+	switch {
+	case b.value == "":
 		b.text.Text = "Pick"
 		b.text.TextSize = theme.Size(theme.SizeNameText)
-	} else {
+	case drawableIcon(b.value) == "":
+		// An icon is set but the window cannot draw it: say so rather than
+		// show an empty box (#547).
+		b.text.Text = "?"
+		b.text.TextSize = theme.Size(theme.SizeNameText)
+	default:
 		b.text.Text = b.value
 		b.text.TextSize = emojiButtonTextSize
 	}

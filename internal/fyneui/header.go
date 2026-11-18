@@ -49,7 +49,7 @@ type cardHeader struct {
 const headerDetailSize float32 = 14
 
 func newCardHeader(emoji, title string) *cardHeader {
-	header := &cardHeader{Text: title, emoji: emoji}
+	header := &cardHeader{Text: title, emoji: drawableIcon(emoji)}
 
 	// canvas.Text, not a Label: a Label is a Tappable in the canvas and would
 	// swallow the click that opens the card.
@@ -68,8 +68,8 @@ func newCardHeader(emoji, title string) *cardHeader {
 	// The caption starts under the title's first letter, not under the emoji,
 	// so the name and what it runs read as one column.
 	indent := float32(0)
-	if emoji != "" {
-		indent = fyne.MeasureText(emoji+"  ", cardTextSize, header.text.TextStyle).Width
+	if header.emoji != "" {
+		indent = fyne.MeasureText(header.emoji+"  ", cardTextSize, header.text.TextStyle).Width
 	}
 
 	header.caption = container.New(layout.NewCustomPaddedLayout(0, 0, indent, 0), header.detail)

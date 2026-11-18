@@ -16,6 +16,7 @@ import (
 // groupLabel is what a group is called in the window: its icon, when it has
 // one, then its name.
 func groupLabel(icon, name string) string {
+	icon = drawableIcon(icon)
 	if icon == "" {
 		return name
 	}

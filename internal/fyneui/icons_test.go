@@ -332,3 +332,42 @@ func findTable(object fyne.CanvasObject) *widget.Table {
 
 	return nil
 }
+
+// An icon set before #543 (from the CLI, an import or an older picker) can be a
+// glyph no bundled font draws. The window leaves it out of titles and labels so
+// the name keeps its left edge, and the button says an icon is set (#547).
+func TestUndrawableIconIsLeftOutOfTheWindow(t *testing.T) {
+	const brain = "🧠" // Emoji 10, not in the bundled EmojiOne set
+
+	if got := drawableIcon(brain); got != "" {
+		t.Fatalf("drawableIcon(%q) = %q, want it dropped", brain, got)
+	}
+
+	if got := drawableIcon(" 🚀 "); got != "🚀" {
+		t.Errorf("drawableIcon(🚀) = %q, want it kept", got)
+	}
+
+	header := newCardHeader(brain, "think")
+	if header.text.Text != "think" {
+		t.Errorf("header = %q, want the name alone", header.text.Text)
+	}
+
+	// The caption is indented by the icon's width; an icon that is not drawn
+	// must not indent it.
+	plain := newCardHeader("", "think")
+	header.setDetail("echo hi")
+	plain.setDetail("echo hi")
+
+	if plain.caption.MinSize() != header.caption.MinSize() {
+		t.Errorf("caption indented by an icon that is not drawn: %v vs %v", header.caption.MinSize(), plain.caption.MinSize())
+	}
+
+	if got := groupLabel(brain, "ideas"); got != "ideas" {
+		t.Errorf("groupLabel = %q, want the name alone", got)
+	}
+
+	button := newEmojiButton(brain, nil)
+	if button.text.Text != "?" || button.value != brain {
+		t.Errorf("button shows %q holding %q; want ? and the stored icon kept", button.text.Text, button.value)
+	}
+}

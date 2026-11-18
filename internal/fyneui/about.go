@@ -101,7 +101,7 @@ func (u *ui) aboutTab() fyne.CanvasObject {
 	u.aboutActions = actions
 
 	if previous, found := u.updater.Previous(); found {
-		u.restoreButton = newButton("Restore "+previous, nil, widget.WarningImportance, u.restorePrevious)
+		u.restoreButton = newQuietButton("Restore "+previous, theme.HistoryIcon(), theme.ColorNameWarning, u.restorePrevious)
 		actions.Add(u.restoreButton)
 	}
 

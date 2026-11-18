@@ -70,7 +70,7 @@ func (u *ui) buildCommandBody(card *commandCard) fyne.CanvasObject {
 
 	card.run = newButton("Run", theme.MediaPlayIcon(), widget.SuccessImportance, func() { u.runCommandCard(card) })
 	card.edit = newButton("Edit", theme.DocumentCreateIcon(), widget.HighImportance, func() { u.showEditFor(card.key) })
-	card.remove = newButton("Delete", theme.DeleteIcon(), widget.DangerImportance, func() { u.showDeleteFor(card.key) })
+	card.remove = newQuietButton("Delete", theme.DeleteIcon(), theme.ColorNameError, func() { u.showDeleteFor(card.key) })
 
 	// Run sits with Edit and Delete, not inside the parameter row: a row of
 	// actions reads as one group, and the field gets the full card width.

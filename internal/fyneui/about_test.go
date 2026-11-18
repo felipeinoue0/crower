@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -174,6 +175,8 @@ func TestAboutOffersRestoreOnlyWhenPreviousIsRecorded(t *testing.T) {
 	if !strings.Contains(front.restoreButton.Text, "v0.9.0") {
 		t.Errorf("restore button = %q, want the previous version", front.restoreButton.Text)
 	}
+
+	assertQuiet(t, "Restore", front.restoreButton, theme.ColorNameWarning)
 
 	fresh := &stubUpdater{current: "v1.0.0"}
 	front, _ = newTestUIWithUpdater(t, testModel(), stubEditor{}, stubReverter{}, fresh)

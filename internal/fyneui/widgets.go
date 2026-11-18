@@ -474,6 +474,20 @@ func newButton(text string, icon fyne.Resource, importance widget.Importance, ta
 	return &appButton{Button: button, iconOnly: strings.TrimSpace(text) == "" && icon != nil}
 }
 
+// newQuietButton is a secondary action that still says what it does: the
+// neutral button face, with its icon in the action's colour (red for a delete,
+// amber for a restore).
+//
+// A filled red or amber button beside the filled Run and Edit read as raised
+// or smaller even though the geometry is identical: saturated red beside blue
+// on a dark ground appears to float forward, and the amber was 2.4× brighter
+// than the other actions (#550). A destructive action should not be the
+// loudest one in its row anyway; the confirmation dialog it opens keeps the
+// filled colour.
+func newQuietButton(text string, icon fyne.Resource, color fyne.ThemeColorName, tapped func()) *appButton {
+	return newButton(text, theme.NewColoredResource(icon, color), widget.MediumImportance, tapped)
+}
+
 // rowFlow places objects side by side at their natural size with a gap,
 // wrapping to another row when the width runs out.
 //

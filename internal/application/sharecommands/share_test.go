@@ -536,3 +536,75 @@ func TestImportAcceptsAnEnvReference(t *testing.T) {
 		t.Errorf("imported = %+v, %v; want the reference", got, found)
 	}
 }
+
+// Importing the shell's aliases twice changes nothing: an alias crower already
+// has with the same line is skipped without a question.
+func TestImportAliasesSkipsWhatIsAlreadyThere(t *testing.T) {
+	h := newHarness(catalog.Command{Name: "ll", Exec: "ls -la"})
+
+	aliases := []catalog.Command{
+		{Name: "ll", Exec: "ls -la"},
+		{Name: "gs", Exec: "git status", Group: "imported"},
+	}
+
+	if err := h.useCase().ImportAliases(aliases, false, false); err != nil {
+		t.Fatalf("ImportAliases: %v", err)
+	}
+
+	if len(h.prompt.asked) != 0 {
+		t.Errorf("asked %v; an identical alias needs no question", h.prompt.asked)
+	}
+
+	if len(h.state.saved) != 1 {
+		t.Fatalf("saved %d times, want 1", len(h.state.saved))
+	}
+
+	saved := h.state.saved[0]
+	if got, ok := saved.Get("gs"); !ok || got.Exec != "git status" || got.Group != "imported" {
+		t.Errorf("gs = %+v, %v", got, ok)
+	}
+
+	if got := strings.Join(h.output.results, "\n"); !strings.Contains(got, "Imported 1 alias (1 already in crower)") {
+		t.Errorf("result = %q", got)
+	}
+
+	// Second run, against the saved set: nothing to do.
+	again := newHarness(saved.Commands()...)
+	if err := again.useCase().ImportAliases(aliases, false, false); err != nil {
+		t.Fatalf("second ImportAliases: %v", err)
+	}
+
+	if len(again.state.saved) != 0 {
+		t.Errorf("a second import saved %d times", len(again.state.saved))
+	}
+}
+
+func TestImportAliasesPreviewWritesNothing(t *testing.T) {
+	h := newHarness()
+
+	if err := h.useCase().ImportAliases([]catalog.Command{{Name: "gs", Exec: "git status"}}, false, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(h.state.saved) != 0 {
+		t.Errorf("preview saved %d times", len(h.state.saved))
+	}
+
+	if !strings.Contains(strings.Join(h.output.infos, "\n"), "gs") || !strings.Contains(strings.Join(h.output.results, "\n"), "Would import 1") {
+		t.Errorf("preview infos=%q results=%q", h.output.infos, h.output.results)
+	}
+}
+
+// A different command under the same name is a real clash: it goes through
+// the pack's rename-or-skip question, and "no" leaves it alone.
+func TestImportAliasesAsksOnARealClash(t *testing.T) {
+	h := newHarness(catalog.Command{Name: "gs", Exec: "gst"})
+
+	if err := h.useCase().ImportAliases([]catalog.Command{{Name: "gs", Exec: "git status"}}, false, false); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(h.prompt.asked) != 1 || len(h.state.saved) != 0 {
+		t.Errorf("asked %v, saved %d; want one question and nothing saved", h.prompt.asked, len(h.state.saved))
+	}
+}

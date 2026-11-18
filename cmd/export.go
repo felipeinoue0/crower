@@ -1,7 +1,13 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/fiwon123/crower/internal/adapters/github"
+	"github.com/fiwon123/crower/internal/adapters/shellalias"
 	"github.com/fiwon123/crower/internal/adapters/storage"
 	"github.com/fiwon123/crower/internal/application/sharecommands"
 	"github.com/fiwon123/crower/internal/domain/catalog"
@@ -38,20 +44,33 @@ var exportCmd = &cobra.Command{
 }
 
 var importCmd = &cobra.Command{
-	Use:   "import <file>",
-	Short: "Import commands from a file.",
+	Use:   "import [file]",
+	Short: "Import commands from a file, or your existing shell aliases.",
 	Long: `Import commands from a TOML file. --overwrite replaces a command that
-already exists with the same name.`,
-	Example: `	crower import ./commands.toml
-	crower import ./commands.toml --overwrite`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return missingArgs(cmd, "a file to import")
-		}
+already exists with the same name.
 
-		cfg, err := newSession(cmd)
+--from-shell imports the aliases you already have. With no file it reads the
+startup files of bash, zsh, fish and PowerShell (~/.bashrc, ~/.bash_aliases,
+~/.zshrc, config.fish and fish functions, the PowerShell profiles); with a
+file it reads that file; with "-" it reads the output of "alias" from stdin.
+The files are read, never run. Importing twice changes nothing.
+
+	crower import --from-shell --dry-run
+	crower import --from-shell
+	alias | crower import --from-shell -`,
+	Example: `	crower import ./commands.toml
+	crower import ./commands.toml --overwrite
+	crower import --from-shell --dry-run
+	alias | crower import --from-shell -`,
+	Args: cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fromShell, err := cmd.Flags().GetBool("from-shell")
 		if err != nil {
 			return err
+		}
+
+		if len(args) == 0 && !fromShell {
+			return missingArgs(cmd, "a file to import")
 		}
 
 		overwrite, err := cmd.Flags().GetBool("overwrite")
@@ -59,8 +78,103 @@ already exists with the same name.`,
 			return err
 		}
 
+		if fromShell {
+			preview, err := cmd.Flags().GetBool("dry-run")
+			if err != nil {
+				return err
+			}
+
+			aliases, err := readShellAliases(args)
+			if err != nil {
+				return err
+			}
+
+			cfg, err := newSession(cmd)
+			if err != nil {
+				return err
+			}
+
+			return newShareUseCase(cfg).ImportAliases(aliases, overwrite, preview)
+		}
+
+		cfg, err := newSession(cmd)
+		if err != nil {
+			return err
+		}
+
 		return newShareUseCase(cfg).Import(args[0], overwrite)
 	},
+}
+
+// readShellAliases reads the aliases --from-shell imports, as commands: from
+// the startup files, one file, or stdin ("-").
+func readShellAliases(args []string) ([]catalog.Command, error) {
+	var (
+		found []shellalias.Alias
+		err   error
+	)
+
+	switch {
+	case len(args) == 1 && args[0] == "-":
+		found, err = shellalias.Parse(streams.In, "alias output", true)
+	case len(args) == 1:
+		var file *os.File
+
+		file, err = os.Open(args[0])
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
+		found, err = shellalias.Parse(file, args[0], false)
+	default:
+		home, homeErr := os.UserHomeDir()
+		if homeErr != nil {
+			return nil, homeErr
+		}
+
+		var read []string
+
+		found, read, err = shellalias.ReadStartupFiles(home)
+		if len(read) == 0 && err == nil {
+			fmt.Fprintln(streams.Err, "No shell startup file found. Try: alias | crower import --from-shell -")
+		}
+
+		for _, path := range read {
+			fmt.Fprintln(streams.Err, "Read", path)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	commands := make([]catalog.Command, 0, len(found))
+
+	for _, alias := range found {
+		commands = append(commands, catalog.Command{
+			Name:        alias.Name,
+			Exec:        alias.Value,
+			Description: "imported from " + displayPath(alias.Source),
+			Group:       "imported",
+		})
+	}
+
+	return commands, nil
+}
+
+// displayPath shortens a path under the home directory to ~/...
+func displayPath(path string) string {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return path
+	}
+
+	if rel, err := filepath.Rel(home, path); err == nil && !strings.HasPrefix(rel, "..") && filepath.IsAbs(path) {
+		return filepath.ToSlash(filepath.Join("~", rel))
+	}
+
+	return path
 }
 
 var shareCmd = &cobra.Command{
@@ -153,6 +267,8 @@ func newShareUseCase(cfg *session.Session) *sharecommands.UseCase {
 func init() {
 	exportCmd.Flags().StringP("out", "o", "", "Output file path")
 	importCmd.Flags().Bool("overwrite", false, "Overwrite existing commands")
+	importCmd.Flags().Bool("from-shell", false, "import your existing shell aliases")
+	importCmd.Flags().BoolP("dry-run", "n", false, "with --from-shell, show what would be imported")
 
 	rootCmd.AddCommand(exportCmd)
 	rootCmd.AddCommand(importCmd)

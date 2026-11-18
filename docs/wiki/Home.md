@@ -2,10 +2,10 @@
 
 # 🐦 crower
 
-**Shortcut any command. Automate the boring parts. Share the result.**
+**One alias manager for every shell — with history, undo and a window.**
 
-A cross-platform terminal file manager and command-alias manager with undoable
-history and per-item notes.
+Save a command once and run it by name in bash, zsh, fish, PowerShell or cmd.
+Every change is recorded and can be undone.
 
 [![Release](https://img.shields.io/github/v/release/fiwon123/crower?style=for-the-badge&color=4C8BF5&label=release)](https://github.com/fiwon123/crower/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/fiwon123/crower/ci.go.yml?branch=main&style=for-the-badge&label=ci&color=22C55E)](https://github.com/fiwon123/crower/actions/workflows/ci.go.yml)
@@ -19,12 +19,14 @@ history and per-item notes.
 ## ⚡ Start in thirty seconds
 
 ```bash
-# a shortcut for the command you keep retyping
-crower create docker-ps "docker ps --format 'table {{.Names}}\t{{.Status}}'"
+crower init --apply             # once: PATH, native aliases, completion
+crower import --from-shell      # bring the aliases you already have
 
-# run it by name, or by its alias
-crower execute docker-ps
-cr docker-ps
+# a shortcut for the command you keep retyping
+crower create dps "docker ps --format 'table {{.Names}}\t{{.Status}}'"
+
+dps                             # it's a command now — in any shell
+cr                              # forgot the name? fuzzy finder
 ```
 
 <p align="center">
@@ -39,6 +41,7 @@ cr docker-ps
 | --- | --- |
 | install it | **[📦 Installation](How-to-Install)** |
 | create my first shortcut | **[⚡ Quick start](Quick-Start)** |
+| run commands by name in my shell | **[🐚 Shell integration](Shell-Integration)** |
 | look up a command or flag | **[📖 Command reference](Command-Reference)** |
 | copy a recipe into my shell | **[🍳 Recipes](Recipes)** |
 | call crower from a script | **[🧩 Scripting](Scripting)** |
@@ -54,6 +57,10 @@ cr docker-ps
 | | Capability |
 | :--: | --- |
 | 🔖 | **Shortcut anything** — any shell command becomes a name and an alias |
+| 🐚 | **Native in every shell** — `deploy`, not `cr deploy`, with tab completion |
+| 📥 | **Import** — the aliases already in your bash, zsh, fish or PowerShell config |
+| 🔎 | **Find** — search, groups, run counts, and a fuzzy finder on bare `cr` |
+| 🖥️ | **Interactive** — runs attached to your terminal; `--dry-run` shows the line first |
 | ⚡ | **Chain steps** — multi-step commands with automatic error handling |
 | 🔗 | **Nest commands** — call a crower command from another, with recursion protection |
 | 📝 | **Annotate** — notes on commands, next to the history that shows what ran |
@@ -64,8 +71,8 @@ cr docker-ps
 
 > [!NOTE]
 > **Two ways in.** `crower gui` is the terminal menu; `crower-gui` (in the same
-> archive) is the Fyne window. Both read the same configuration.
-> opens a native window. Both read the same configuration as the CLI.
+> archive) is the desktop window, light or dark. Both read the same
+> configuration as the CLI.
 
 ## ⚠️ What is not proven
 

@@ -26,7 +26,8 @@ is a page (a command page's file name is the command, e.g. `create.md`).
 | --- | --- |
 | `Home.md` | Hero, quick start, where to go, what is not proven |
 | `How-to-Install.md` | Per-platform download, `PATH`, build from source |
-| `Quick-Start.md` | First shortcut in four commands |
+| `Quick-Start.md` | Shell hook, import, first shortcut in five commands |
+| `Shell-Integration.md` | The `init` hook per shell, sync, completion, cmd.exe |
 | `How-to-Use.md` | Command map, global flags, prefix shortcuts |
 | `Recipes.md` | Copy-paste workflows |
 | `Scripting.md` | stdout/stderr, exit codes, `--no-input`, `--config` |

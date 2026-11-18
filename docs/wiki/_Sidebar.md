@@ -3,6 +3,7 @@
 ### 🚀 Get going
 - [📦 Installation](How-to-Install)
 - [⚡ Quick start](Quick-Start)
+- [🐚 Shell integration](Shell-Integration)
 - [📖 Command reference](Command-Reference)
 
 ### 🍳 Do things

@@ -13,6 +13,7 @@ package executecommand
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/fiwon123/crower/internal/domain/catalog"
@@ -31,6 +32,10 @@ type Request struct {
 	// Last, when set, runs the command the last operation of this kind
 	// touched. The --last forms take no key and ask nothing.
 	Last operation.Operation
+
+	// DryRun prints what would run -- every expanded step and the target --
+	// and runs nothing. Nothing is recorded.
+	DryRun bool
 }
 
 // State is the command set and the history it is recorded in.
@@ -119,6 +124,10 @@ func New(state State, output Output, prompt Prompter, runner Runner, notes Notes
 // Run runs what the request names, prompting for the command when the request
 // names none, and records the operation.
 func (u *UseCase) Run(request Request) error {
+	if request.DryRun {
+		return u.dryRun(request)
+	}
+
 	if request.Last != "" {
 		return u.runLast(request)
 	}
@@ -232,41 +241,18 @@ func (u *UseCase) execute(key string, params []string) (string, catalog.Command,
 // target once, and a step inheriting it is the behaviour that needs no extra
 // syntax.
 func (u *UseCase) runSteps(command catalog.Command, params []string) (string, error) {
-	steps := command.Steps
-
-	if len(steps) == 0 {
-		execLine, err := applyParams(command.Exec, params)
-		if err != nil {
-			return "", err
-		}
-
-		u.output.Debug("exec: " + execLine)
-
-		steps = []string{execLine}
-	} else {
-		substituted, err := applyParamsToSteps(steps, params)
-		if err != nil {
-			return "", err
-		}
-
-		steps = substituted
+	steps, target, err := plan(command, params)
+	if err != nil {
+		return "", err
 	}
 
-	target := Target{
-		Shell:   command.Shell,
-		Dir:     command.Cwd,
-		Env:     command.Env,
-		Timeout: command.Timeout,
+	if len(command.Steps) == 0 && len(steps) == 1 {
+		u.output.Debug("exec: " + steps[0])
 	}
 
 	var allOut strings.Builder
 
 	for i, step := range steps {
-		step = strings.TrimSpace(step)
-		if step == "" {
-			continue
-		}
-
 		if isNestedCrower(step) {
 			out, err := u.runner.RunNested(step, target)
 			allOut.WriteString(out)
@@ -289,6 +275,104 @@ func (u *UseCase) runSteps(command catalog.Command, params []string) (string, er
 	}
 
 	return allOut.String(), nil
+}
+
+// plan is what a run would do: the steps with their parameters applied, blank
+// steps dropped, and the target every step inherits.
+func plan(command catalog.Command, params []string) ([]string, Target, error) {
+	raw := command.Steps
+
+	if len(raw) == 0 {
+		execLine, err := applyParams(command.Exec, params)
+		if err != nil {
+			return nil, Target{}, err
+		}
+
+		raw = []string{execLine}
+	} else {
+		substituted, err := applyParamsToSteps(raw, params)
+		if err != nil {
+			return nil, Target{}, err
+		}
+
+		raw = substituted
+	}
+
+	steps := make([]string, 0, len(raw))
+
+	for _, step := range raw {
+		if step = strings.TrimSpace(step); step != "" {
+			steps = append(steps, step)
+		}
+	}
+
+	target := Target{
+		Shell:   command.Shell,
+		Dir:     command.Cwd,
+		Env:     command.Env,
+		Timeout: command.Timeout,
+	}
+
+	return steps, target, nil
+}
+
+// dryRun prints the plan for the request's command and runs nothing.
+//
+// It goes to the result stream: the expanded line is the answer the caller
+// asked for, and `crower execute x --dry-run | sh` is a legitimate use.
+func (u *UseCase) dryRun(request Request) error {
+	key := request.Key
+
+	if request.Last != "" {
+		name, found := u.state.LastCommand(request.Last)
+		if !found {
+			return errors.CommandNotFound(string(request.Last))
+		}
+
+		key = name
+	}
+
+	if key == "" {
+		return errors.CommandNotFound("")
+	}
+
+	command, found := u.state.Commands().Resolve(key)
+	if !found {
+		return errors.CommandNotFound(key)
+	}
+
+	steps, target, err := plan(command, request.Params)
+	if err != nil {
+		return err
+	}
+
+	u.output.Result(strings.Join(steps, "\n"))
+
+	if target.Shell != "" {
+		u.output.Info("shell:   ", target.Shell)
+	}
+
+	if target.Dir != "" {
+		u.output.Info("folder:  ", target.Dir)
+	}
+
+	if len(target.Env) > 0 {
+		keys := make([]string, 0, len(target.Env))
+		for k := range target.Env {
+			keys = append(keys, k)
+		}
+
+		slices.Sort(keys)
+		u.output.Info("env:     ", strings.Join(keys, ", "))
+	}
+
+	if target.Timeout != "" {
+		u.output.Info("timeout: ", target.Timeout)
+	}
+
+	u.output.Info("(dry run: nothing was executed)")
+
+	return nil
 }
 
 // chooseCommand prints the table and asks for a row.

@@ -13,6 +13,9 @@ import (
 
 var last bool
 
+// dryRunFlag prints what a run would execute, and runs nothing.
+var dryRunFlag bool
+
 // executeCmd represents the execute command
 var executeCmd = &cobra.Command{
 	Use:   "execute <command> [params...]",
@@ -22,6 +25,9 @@ var executeCmd = &cobra.Command{
 	crower execute greet
 	crower greet
 
+--dry-run (-n) prints the expanded line and runs nothing:
+	crower execute greet Ann --dry-run
+
 The last touched command can be run instead:
 	crower execute --last
 	crower execute --create
@@ -30,6 +36,7 @@ The last touched command can be run instead:
 Arguments after the command are applied to its steps.`,
 	Example: `	crower execute greet
 	crower execute greet --help
+	crower execute greet Ann --dry-run
 	crower execute --last`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := newSession(cmd)
@@ -37,7 +44,7 @@ Arguments after the command are applied to its steps.`,
 			return err
 		}
 
-		request := executecommand.Request{}
+		request := executecommand.Request{DryRun: dryRunFlag}
 
 		// The flags decide which command to run; the use case owns how.
 		switch {
@@ -49,6 +56,8 @@ Arguments after the command are applied to its steps.`,
 			request.Last, request.Params = operation.Update, args
 		case len(args) > 0:
 			request.Key, request.Params = args[0], args[1:]
+		case dryRunFlag:
+			return missingArgs(cmd, "a command to show")
 		}
 
 		session := newExecuteSession(cfg)
@@ -69,8 +78,19 @@ type executeSession struct {
 	runner *system.Runner
 }
 
-// newExecuteSession wires the configuration and the shell runner.
+// newExecuteSession wires the configuration and a runner attached to the
+// terminal: the CLI runs a command the way the shell would, so ssh, vim and a
+// prompt work and a long build shows its output as it goes.
 func newExecuteSession(cfg *session.Session) executeSession {
+	return executeSession{
+		sessionPorts: newSessionPorts(cfg),
+		runner:       system.NewLiveRunner(system.Streams{In: streams.In, Out: streams.Out, Err: streams.Err}),
+	}
+}
+
+// newCapturingExecuteSession wires a runner that captures the output, for an
+// interface that displays the output itself.
+func newCapturingExecuteSession(cfg *session.Session) executeSession {
 	return executeSession{
 		sessionPorts: newSessionPorts(cfg),
 		runner:       system.NewRunner(),
@@ -111,4 +131,5 @@ func init() {
 	executeCmd.Flags().BoolVarP(&last, "last", "l", false, "execute recent executed command")
 	executeCmd.Flags().BoolVarP(&createFlag, "create", "c", false, "execute recent created command")
 	executeCmd.Flags().BoolVarP(&updateFlag, "update", "u", false, "execute recent updated command")
+	executeCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "n", false, "print what would run, and run nothing")
 }

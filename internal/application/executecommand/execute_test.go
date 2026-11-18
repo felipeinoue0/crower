@@ -711,3 +711,59 @@ func TestExecuteForTheUIsUnknownCommand(t *testing.T) {
 		t.Errorf("command = %q, want empty", name)
 	}
 }
+
+// --dry-run shows the expanded steps and the target, and runs and records
+// nothing.
+func TestDryRunRunsNothing(t *testing.T) {
+	h := newHarness(catalog.Command{
+		Name:    "deploy",
+		Steps:   []string{"echo build {1}", " ", "echo ship {1}"},
+		Cwd:     "/srv",
+		Env:     map[string]string{"B": "2", "A": "1"},
+		Timeout: "30s",
+	})
+
+	if err := h.run(executecommand.Request{Key: "deploy", Params: []string{"prod"}, DryRun: true}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if len(h.runner.calls) != 0 || len(h.runner.nestedCalls) != 0 {
+		t.Errorf("dry run ran %v %v", h.runner.calls, h.runner.nestedCalls)
+	}
+
+	if len(h.state.records) != 0 {
+		t.Errorf("dry run recorded %v", h.state.records)
+	}
+
+	if got, want := h.output.results, []string{"echo build 'prod'\necho ship 'prod'"}; !slices.Equal(got, want) {
+		t.Errorf("results = %q, want %q", got, want)
+	}
+
+	info := h.output.infoText()
+	for _, want := range []string{"/srv", "A, B", "30s", "nothing was executed"} {
+		if !strings.Contains(info, want) {
+			t.Errorf("diagnostics lack %q:\n%s", want, info)
+		}
+	}
+}
+
+func TestDryRunOfAnUnknownCommandFails(t *testing.T) {
+	h := newHarness(twoCommands()...)
+
+	if err := h.run(executecommand.Request{Key: "nope", DryRun: true}); err == nil {
+		t.Error("dry run of an unknown command succeeded")
+	}
+}
+
+func TestDryRunFollowsLast(t *testing.T) {
+	h := newHarness(twoCommands()...)
+	h.state.last[operation.Execute] = "build"
+
+	if err := h.run(executecommand.Request{Last: operation.Execute, DryRun: true}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if got, want := h.output.results, []string{"go build ./..."}; !slices.Equal(got, want) {
+		t.Errorf("results = %q, want %q", got, want)
+	}
+}

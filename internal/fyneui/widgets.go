@@ -316,16 +316,35 @@ type formRow struct {
 // card's field list. widget.Form draws its keys as trailing-aligned rich text a
 // user cannot select, which is the one thing every label in this window avoids.
 func newFormGrid(rows []formRow) *fyne.Container {
+	return newFormGridWidth(rows, 0)
+}
+
+// newFormGridWidth is newFormGrid with a label column at least labelWidth
+// wide. Forms that sit one under the other share a width, so their fields
+// start at the same x instead of each following its own longest label.
+func newFormGridWidth(rows []formRow, labelWidth float32) *fyne.Container {
 	objects := make([]fyne.CanvasObject, 0, len(rows)*2)
 
 	for _, row := range rows {
-		label := widget.NewLabelWithStyle(row.label, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-		label.Selectable = true
+		label := formLabel(row.label)
 
-		objects = append(objects, label, row.control)
+		var key fyne.CanvasObject = label
+		if labelWidth > 0 {
+			key = container.NewStack(gap(labelWidth, 0), label)
+		}
+
+		objects = append(objects, key, row.control)
 	}
 
 	return container.New(layout.NewFormLayout(), objects...)
+}
+
+// formLabel is a form's key: bold, left-aligned and selectable.
+func formLabel(text string) *widget.Label {
+	label := widget.NewLabelWithStyle(text, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+	label.Selectable = true
+
+	return label
 }
 
 // block is a message in an inset panel: an optional accent bar on the left, the
@@ -685,7 +704,7 @@ func newAppCard(title, description string, content fyne.CanvasObject, centered b
 	heading := container.New(layout.NewCustomPaddedVBoxLayout(appPadding), head, desc)
 	inner := container.New(layout.NewCustomPaddedVBoxLayout(appSection), heading, content)
 
-	background := canvas.NewRectangle(theme.Color(theme.ColorNameInputBackground))
+	background := canvas.NewRectangle(theme.Color(colorNameCard))
 	background.CornerRadius = theme.Size(theme.SizeNameInputRadius)
 	background.StrokeColor = theme.Color(theme.ColorNameSeparator)
 	background.StrokeWidth = theme.Size(theme.SizeNameSeparatorThickness)

@@ -3,6 +3,8 @@
 package fyneui
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -34,10 +36,17 @@ type cardHeader struct {
 
 	emoji   string
 	text    *canvas.Text
+	detail  *ellipsisText
+	caption *fyne.Container
+	lines   *fyne.Container
 	chevron *widget.Icon
 	open    bool
 	box     *fyne.Container
 }
+
+// headerDetailSize is the detail line's text size: a step below the body so it
+// reads as a caption under the title.
+const headerDetailSize float32 = 14
 
 func newCardHeader(emoji, title string) *cardHeader {
 	header := &cardHeader{Text: title, emoji: emoji}
@@ -50,6 +59,24 @@ func newCardHeader(emoji, title string) *cardHeader {
 
 	header.chevron = widget.NewIcon(theme.MenuDropDownIcon())
 
+	// The detail line is hidden until a card gives it text, so a card without
+	// one keeps exactly its one-line header.
+	header.detail = newEllipsisText("", headerDetailSize, fyne.TextStyle{Monospace: true}, func() color.Color {
+		return theme.Color(theme.ColorNamePlaceHolder)
+	})
+
+	// The caption starts under the title's first letter, not under the emoji,
+	// so the name and what it runs read as one column.
+	indent := float32(0)
+	if emoji != "" {
+		indent = fyne.MeasureText(emoji+"  ", cardTextSize, header.text.TextStyle).Width
+	}
+
+	header.caption = container.New(layout.NewCustomPaddedLayout(0, 0, indent, 0), header.detail)
+	header.caption.Hide()
+
+	header.lines = container.New(layout.NewCustomPaddedVBoxLayout(appPadding/2), header.text, header.caption)
+
 	// Vertical air only, so the title clears the card's top and bottom and the
 	// tap target stays comfortable. No horizontal inset: the card's own padding
 	// puts the title off the edge, and the body is added at this same left edge
@@ -61,7 +88,7 @@ func newCardHeader(emoji, title string) *cardHeader {
 			nil,
 			nil,
 			container.NewCenter(header.chevron),
-			centeredVertically(header.text),
+			header.lines,
 		),
 	)
 
@@ -103,6 +130,22 @@ func (h *cardHeader) setOpen(open bool) {
 	}
 
 	h.chevron.SetResource(theme.MenuDropDownIcon())
+}
+
+// setDetail shows a caption under the title -- for a command, the line it
+// runs -- cut to the header's width. Empty hides it.
+func (h *cardHeader) setDetail(detail string) {
+	h.detail.SetText(detail)
+
+	if detail == "" {
+		h.caption.Hide()
+	} else {
+		h.caption.Show()
+	}
+
+	h.lines.Refresh()
+
+	h.box.Refresh()
 }
 
 // SetText replaces the summary, keeping the emoji.

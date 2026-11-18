@@ -458,34 +458,58 @@ func (b *appButton) Size() fyne.Size {
 	return b.size
 }
 
+// labelIconShift is how far a labelled button's icon is drawn below centre, in
+// the icon's own 24-unit SVG coordinates: 1.2 units is 1px at the 20px icon
+// size.
+const labelIconShift = "1.2"
+
+// labelIcon is icon drawn labelIconShift lower, so its centre meets the centre
+// of the label's capitals.
+//
+// Fyne centres the icon on the button but centres the label's whole line box,
+// descender room included, so the capitals sit 1px below the icon's centre. A
+// thin icon (the pencil, the play triangle) hides that; a solid one (the trash
+// can, the clock) reads as raised, which made Delete and Restore look offset
+// from Run and Edit (#555). An icon-only button has no label and stays centred.
+//
+// The copy is a ThemedResource with the source's colour, so the button still
+// recolours it for its importance and the theme; an icon whose SVG has no
+// 24-unit viewBox is returned unchanged.
+func labelIcon(icon fyne.Resource) fyne.Resource {
+	const viewBox = `viewBox="0 0 24 24"`
+
+	content := string(icon.Content())
+	if !strings.Contains(content, viewBox) {
+		return icon
+	}
+
+	shifted := strings.Replace(content, viewBox, `viewBox="0 -`+labelIconShift+` 24 24"`, 1)
+	resource := theme.NewThemedResource(fyne.NewStaticResource("label-"+icon.Name(), []byte(shifted)))
+
+	if themed, ok := icon.(fyne.ThemedResource); ok {
+		resource.ColorName = themed.ThemeColorName()
+	}
+
+	return resource
+}
+
 // newButton builds every action button in the window: one height, one minimum
 // width, and the importance passed in. A nil icon means a text-only button; an
 // empty label with an icon means an icon-only button.
 func newButton(text string, icon fyne.Resource, importance widget.Importance, tapped func()) *appButton {
 	var button *widget.Button
-	if icon == nil {
+	switch {
+	case icon == nil:
 		button = widget.NewButton(text, tapped)
-	} else {
+	case strings.TrimSpace(text) == "":
 		button = widget.NewButtonWithIcon(text, icon, tapped)
+	default:
+		button = widget.NewButtonWithIcon(text, labelIcon(icon), tapped)
 	}
 
 	button.Importance = importance
 
 	return &appButton{Button: button, iconOnly: strings.TrimSpace(text) == "" && icon != nil}
-}
-
-// newQuietButton is a secondary action that still says what it does: the
-// neutral button face, with its icon in the action's colour (red for a delete,
-// amber for a restore).
-//
-// A filled red or amber button beside the filled Run and Edit read as raised
-// or smaller even though the geometry is identical: saturated red beside blue
-// on a dark ground appears to float forward, and the amber was 2.4× brighter
-// than the other actions (#550). A destructive action should not be the
-// loudest one in its row anyway; the confirmation dialog it opens keeps the
-// filled colour.
-func newQuietButton(text string, icon fyne.Resource, color fyne.ThemeColorName, tapped func()) *appButton {
-	return newButton(text, theme.NewColoredResource(icon, color), widget.MediumImportance, tapped)
 }
 
 // rowFlow places objects side by side at their natural size with a gap,

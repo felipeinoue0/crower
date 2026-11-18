@@ -337,7 +337,7 @@ func (u *ui) buildHistoryBody(card *historyCard) fyne.CanvasObject {
 	card.edit = newButton("Edit", theme.DocumentCreateIcon(), widget.HighImportance, func() {
 		u.editHistoryEntry(card)
 	})
-	card.restore = newQuietButton("Restore this state", theme.HistoryIcon(), theme.ColorNameWarning, func() {
+	card.restore = newButton("Restore this state", theme.HistoryIcon(), widget.WarningImportance, func() {
 		u.showRevert(card)
 	})
 
@@ -489,12 +489,12 @@ func (u *ui) applyRevert(steps int) bool {
 func (card *historyCard) setRawShown(shown bool) {
 	if shown {
 		card.rawPanel.Show()
-		card.rawToggle.SetIcon(theme.MenuDropUpIcon())
+		card.rawToggle.SetIcon(labelIcon(theme.MenuDropUpIcon()))
 		return
 	}
 
 	card.rawPanel.Hide()
-	card.rawToggle.SetIcon(theme.MenuDropDownIcon())
+	card.rawToggle.SetIcon(labelIcon(theme.MenuDropDownIcon()))
 }
 
 // copyText puts text on the clipboard. The app owns the clipboard, so a window

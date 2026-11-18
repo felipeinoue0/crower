@@ -3,6 +3,7 @@
 package fyneui
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/go-text/typesetting/font"
 )
 
 //go:embed emoji/emoji.json
@@ -58,9 +60,10 @@ func loadEmojiCatalogue() []emojiEntry {
 		}
 
 		emojiCatalogue = make([]emojiEntry, 0, len(raw))
+		drawable := bundledGlyphs()
 
 		for _, entry := range raw {
-			if entry.Emoji == "" || !simpleEmoji(entry.Emoji) {
+			if entry.Emoji == "" || !simpleEmoji(entry.Emoji) || !drawable(entry.Emoji) {
 				continue
 			}
 
@@ -87,6 +90,59 @@ func simpleEmoji(glyph string) bool {
 	}
 
 	return true
+}
+
+// bundledGlyphs reports whether every codepoint of a glyph is in a font Fyne
+// ships: the text font, the bundled emoji font or the symbol font.
+//
+// Those are the only fonts the painter is sure to draw. A codepoint none of them
+// covers falls back to a system font, and the painter often cannot draw that
+// font (a colour-bitmap emoji font such as Noto Color Emoji), so the glyph comes
+// out as an empty cell. The bundled EmojiOne set stops around Emoji 11: without
+// this check, 300 of the picker's emoji (🧠, 🥰, 🟢, 🧰, …) were blank (#543).
+//
+// The variation selector and the keycap mark only change how the base glyph is
+// shown, so they are not looked up.
+func bundledGlyphs() func(string) bool {
+	var faces []*font.Face
+
+	for _, resource := range []fyne.Resource{theme.DefaultTextFont(), theme.DefaultEmojiFont(), theme.DefaultSymbolFont()} {
+		if resource == nil {
+			continue // a build with -tags no_emoji has no emoji font
+		}
+
+		face, err := font.ParseTTF(bytes.NewReader(resource.Content()))
+		if err != nil {
+			fyne.LogError("reading a bundled font", err)
+			continue
+		}
+
+		faces = append(faces, face)
+	}
+
+	covered := func(r rune) bool {
+		for _, face := range faces {
+			if _, ok := face.NominalGlyph(r); ok {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	return func(glyph string) bool {
+		for _, r := range glyph {
+			if r == '\ufe0f' || r == '\u20e3' {
+				continue
+			}
+
+			if !covered(r) {
+				return false
+			}
+		}
+
+		return true
+	}
 }
 
 // filterEmoji returns entries whose name, alias or tag contains query, and

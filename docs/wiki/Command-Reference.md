@@ -247,8 +247,8 @@ crower execute --last
 
 The command runs **attached to your terminal**: it reads your keyboard, writes
 as it goes and keeps its colours, so `ssh`, `vim`, `htop` and prompts work
-through an alias. Ctrl+C goes to the command; crower outlives it and records
-the run. A command with a `Timeout` runs in its own process group, gets no
+through an alias. Ctrl+C goes to the command, not to crower, which waits for
+it and reports how it ended. A command with a `Timeout` runs in its own process group, gets no
 stdin, and Ctrl+C cancels it. (`crower gui` and the window capture the output
 and show it instead.)
 

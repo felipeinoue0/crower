@@ -33,8 +33,8 @@ crower greet John dev --dry-run # print the expanded line — run nothing
 The command is attached to your terminal: it reads the keyboard, prints as it
 goes and keeps its colours. `ssh`, `vim`, `htop`, `git rebase -i` and anything
 that asks a question work through crower and through a
-[shell alias](Shell-Integration). Ctrl+C goes to the command; crower outlives
-it and still records the run.
+[shell alias](Shell-Integration). Ctrl+C goes to the command, not to crower,
+so the command decides how to stop and crower reports how it ended.
 
 A command with a `Timeout` runs in its own process group so it can be stopped
 cleanly: it gets no keyboard input, and Ctrl+C cancels it.

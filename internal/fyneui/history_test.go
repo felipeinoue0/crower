@@ -573,3 +573,13 @@ func TestHistoryFieldLabel(t *testing.T) {
 		}
 	}
 }
+
+// Restore is quiet: a neutral face with an amber icon, so it does not glare
+// beside the filled Run and Edit (#550).
+func TestHistoryRestoreIsQuiet(t *testing.T) {
+	note := notes.ExecuteCommandNote(catalog.Command{Name: "greet", Exec: "echo hi"}, nil)
+	front, _ := historyEntryUI(t, stubExecutor{}, nil, operation.Execute, "greet", note)
+	front.toggleHistoryCard(front.historyCards[0])
+
+	assertQuiet(t, "Restore this state", front.historyCards[0].restore, theme.ColorNameWarning)
+}

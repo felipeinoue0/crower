@@ -337,7 +337,7 @@ func (u *ui) buildHistoryBody(card *historyCard) fyne.CanvasObject {
 	card.edit = newButton("Edit", theme.DocumentCreateIcon(), widget.HighImportance, func() {
 		u.editHistoryEntry(card)
 	})
-	card.restore = newButton("Restore this state", theme.HistoryIcon(), widget.WarningImportance, func() {
+	card.restore = newQuietButton("Restore this state", theme.HistoryIcon(), theme.ColorNameWarning, func() {
 		u.showRevert(card)
 	})
 

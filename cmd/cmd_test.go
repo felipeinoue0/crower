@@ -95,6 +95,7 @@ func resetFlags() {
 	exec = ""
 	allAlias = nil
 	outDirFlag = ""
+	skipUpdateNotice = false
 }
 
 // resetPersistentFlags resets the flags every command inherits. They live on

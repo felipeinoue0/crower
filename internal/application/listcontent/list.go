@@ -3,8 +3,10 @@ package listcontent
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fiwon123/crower/internal/domain/catalog"
 	"github.com/fiwon123/crower/internal/domain/operation"
@@ -38,6 +40,25 @@ const (
 type Request struct {
 	Mode Mode
 	Args []string
+
+	// Group keeps only the commands of that group (ModeCommands).
+	Group string
+
+	// Sort orders the commands: "" keeps the saved order, "name", "runs"
+	// (most used first) or "recent" (last run first).
+	Sort string
+}
+
+// Sort orders a command listing accepts.
+var Sorts = []string{"name", "runs", "recent"}
+
+// ListedCommand is one command as the list shows it: its saved row, and how
+// often and when it last ran, counted from the history.
+type ListedCommand struct {
+	Row     int
+	Command catalog.Command
+	Runs    int
+	LastRun time.Time
 }
 
 // State is the command set and the history the operation is recorded in.
@@ -53,6 +74,12 @@ type State interface {
 type Output interface {
 	// Table renders the managed command table.
 	Table(commands catalog.Catalog) string
+
+	// CommandList renders the command listing a person reads.
+	CommandList(rows []ListedCommand) string
+
+	// Info writes a diagnostic line.
+	Info(message string, data ...any)
 
 	// Emit writes text in text mode and payload as JSON in structured mode.
 	Emit(text string, payload any) error
@@ -150,27 +177,58 @@ func (u *UseCase) Run(request Request) error {
 		return u.listPath()
 
 	case ModeCommands:
-		return u.listCommands()
+		return u.listCommands(request)
 
 	default:
 		return fmt.Errorf("unknown list mode %d", request.Mode)
 	}
 }
 
-// listCommands reports the managed commands in their saved order.
-func (u *UseCase) listCommands() error {
-	commands := u.state.Commands()
+// listCommands reports the managed commands: all of them in their saved
+// order, or those matching the search and group, in the order asked for.
+func (u *UseCase) listCommands(request Request) error {
+	if request.Sort != "" && !slices.Contains(Sorts, request.Sort) {
+		return fmt.Errorf("unknown sort %q (use %s)", request.Sort, strings.Join(Sorts, ", "))
+	}
 
-	payload := CommandsResult{Commands: make([]CommandRow, 0, commands.Len())}
+	commands := u.state.Commands()
+	query := strings.ToLower(strings.Join(request.Args, " "))
+	usage := Usage(u.history.HistoryRows())
+
+	rows := make([]ListedCommand, 0, commands.Len())
 
 	for i, command := range commands.Commands() {
+		if request.Group != "" && !strings.EqualFold(command.Group, request.Group) {
+			continue
+		}
+
+		if query != "" && !Matches(command, query) {
+			continue
+		}
+
+		stat := usage[command.Name]
+		rows = append(rows, ListedCommand{Row: i, Command: command, Runs: stat.Runs, LastRun: stat.Last})
+	}
+
+	SortListed(rows, request.Sort)
+
+	payload := CommandsResult{Commands: make([]CommandRow, 0, len(rows))}
+
+	for _, row := range rows {
+		command := row.Command
+
 		aliases := command.Aliases
 		if aliases == nil {
 			aliases = []string{}
 		}
 
+		last := ""
+		if !row.LastRun.IsZero() {
+			last = row.LastRun.UTC().Format(time.RFC3339)
+		}
+
 		payload.Commands = append(payload.Commands, CommandRow{
-			Row:         i,
+			Row:         row.Row,
 			Name:        command.Name,
 			Aliases:     aliases,
 			Exec:        command.Exec,
@@ -182,10 +240,82 @@ func (u *UseCase) listCommands() error {
 			Cwd:         command.Cwd,
 			Env:         redactEnv(command.Env),
 			Timeout:     command.Timeout,
+			Runs:        row.Runs,
+			LastRun:     last,
 		})
 	}
 
-	return u.emit(u.output.Table(commands), payload, u.notes.ListCommandsNote())
+	switch {
+	case commands.Len() == 0:
+		u.output.Info(`No commands yet. Create one: crower create greet "echo hello"`)
+	case len(rows) == 0:
+		u.output.Info("No command matches.")
+	}
+
+	text := ""
+	if len(rows) > 0 {
+		text = u.output.CommandList(rows)
+	}
+
+	return u.emit(text, payload, u.notes.ListCommandsNote())
+}
+
+// Stat is how often a command ran and when it last did.
+type Stat struct {
+	Runs int
+	Last time.Time
+}
+
+// Usage counts the execute entries in the history, per command name.
+func Usage(history []HistoryRow) map[string]Stat {
+	usage := map[string]Stat{}
+
+	for _, row := range history {
+		if row.Operation != string(operation.Execute) || row.Command == "" {
+			continue
+		}
+
+		stat := usage[row.Command]
+		stat.Runs++
+
+		if when, err := time.Parse(time.RFC3339, row.Timestamp); err == nil && when.After(stat.Last) {
+			stat.Last = when
+		}
+
+		usage[row.Command] = stat
+	}
+
+	return usage
+}
+
+// Matches reports whether a command contains query (lower case) in its name,
+// an alias, its line or steps, its description or its group.
+func Matches(command catalog.Command, query string) bool {
+	fields := append([]string{command.Name, command.Exec, command.Description, command.Group}, command.Aliases...)
+	fields = append(fields, command.Steps...)
+
+	for _, field := range fields {
+		if strings.Contains(strings.ToLower(field), query) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// SortListed orders rows in place. The sort is stable, so ties keep the saved
+// order.
+func SortListed(rows []ListedCommand, by string) {
+	switch by {
+	case "name":
+		slices.SortStableFunc(rows, func(a, b ListedCommand) int {
+			return strings.Compare(strings.ToLower(a.Command.Name), strings.ToLower(b.Command.Name))
+		})
+	case "runs":
+		slices.SortStableFunc(rows, func(a, b ListedCommand) int { return b.Runs - a.Runs })
+	case "recent":
+		slices.SortStableFunc(rows, func(a, b ListedCommand) int { return b.LastRun.Compare(a.LastRun) })
+	}
 }
 
 // redactEnv hides a literal under a secret-looking key from the JSON result.

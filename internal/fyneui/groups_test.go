@@ -8,6 +8,9 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/widget"
 
 	"github.com/fiwon123/crower/internal/desktop"
 	"github.com/fiwon123/crower/internal/domain/catalog"
@@ -250,5 +253,77 @@ func TestGroupsDialogSizeFitsTheWindow(t *testing.T) {
 
 	if large.Width > 720 || large.Height > 620 {
 		t.Errorf("maximised size = %v, want it bounded", large)
+	}
+}
+
+// A Groups row lines up: the emoji button and Delete share the window's button
+// height and top edge, and the name's text is centred on the same line (#545).
+func TestGroupsDialogRowIsAligned(t *testing.T) {
+	front, window := newTestUIWithUpdater(t, groupModel(), stubEditor{}, stubReverter{}, &stubUpdater{current: "v1"})
+	window.SetContent(front.content())
+	window.Resize(fyne.NewSize(900, 700))
+	front.showGroups()
+
+	driver := fyne.CurrentApp().Driver()
+	centre := func(o fyne.CanvasObject) float32 {
+		return driver.AbsolutePositionForObject(o).Y + o.Size().Height/2
+	}
+
+	var (
+		emoji  []*emojiButton
+		remove []*appButton
+		names  []*canvas.Text
+	)
+
+	var walk func(fyne.CanvasObject, bool)
+	walk = func(o fyne.CanvasObject, inLabel bool) {
+		switch typed := o.(type) {
+		case *emojiButton:
+			emoji = append(emoji, typed)
+			return
+		case *appButton:
+			if typed.iconOnly {
+				remove = append(remove, typed)
+			}
+			return
+		case *canvas.Text:
+			if inLabel && (typed.Text == "ship" || typed.Text == "deploy" || typed.Text == "backup") {
+				names = append(names, typed)
+			}
+			return
+		case *fyne.Container:
+			for _, child := range typed.Objects {
+				walk(child, inLabel)
+			}
+			return
+		}
+
+		if w, ok := o.(fyne.Widget); ok {
+			_, isLabel := o.(*widget.Label)
+			if renderer := test.WidgetRenderer(w); renderer != nil {
+				for _, child := range renderer.Objects() {
+					walk(child, inLabel || isLabel)
+				}
+			}
+		}
+	}
+
+	walk(window.Canvas().Overlays().Top(), false)
+
+	if len(emoji) != 2 || len(remove) != 2 || len(names) != 2 {
+		t.Fatalf("found %d emoji buttons, %d deletes, %d names; want one per group (2)", len(emoji), len(remove), len(names))
+	}
+
+	for i := range emoji {
+		if emoji[i].Size().Height != buttonHeight || remove[i].Size().Height != buttonHeight {
+			t.Errorf("row %d: emoji %.0f px, Delete %.0f px tall; want both %.0f", i, emoji[i].Size().Height, remove[i].Size().Height, buttonHeight)
+		}
+
+		want := centre(remove[i].Button)
+		for label, got := range map[string]float32{"emoji": centre(emoji[i]), "name": centre(names[i])} {
+			if diff := got - want; diff > 1 || diff < -1 {
+				t.Errorf("row %d: %s centre %.1f, Delete centre %.1f; want them on one line", i, label, got, want)
+			}
+		}
 	}
 }

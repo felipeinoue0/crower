@@ -47,6 +47,11 @@ func noticeDue(mode, lastCheck string, now time.Time) bool {
 	return now.Sub(last) >= period
 }
 
+// skipUpdateNotice is set by a command whose output a shell evaluates at
+// startup, such as the init hook: a new terminal must never wait for the
+// network.
+var skipUpdateNotice bool
+
 // noticeLine is the one-line notice, or "" when there is nothing to say.
 func noticeLine(current, latest string) string {
 	if latest == "" || latest == current {
@@ -63,6 +68,10 @@ func noticeLine(current, latest string) string {
 // failed lookup all end it silently. The lookup never blocks a command for long
 // and never changes the exit status.
 func maybeNotifyUpdate() {
+	if skipUpdateNotice {
+		return
+	}
+
 	// The update flags already do the real work; do not add a second lookup.
 	if versionFlag || checkNewVersion || upgradeFlag || rollbackFlag || installVersion != "" {
 		return

@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	fyne.io/fyne/v2 v2.8.2
+	github.com/go-text/typesetting v0.3.5
 	github.com/mattn/go-runewidth v0.0.24
 	github.com/minio/selfupdate v0.6.0
 	github.com/pelletier/go-toml v1.9.5
@@ -31,7 +32,6 @@ require (
 	github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-text/render v0.2.1 // indirect
-	github.com/go-text/typesetting v0.3.5 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/hack-pad/go-indexeddb v0.3.2 // indirect
 	github.com/hack-pad/safejs v0.1.0 // indirect

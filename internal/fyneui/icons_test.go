@@ -16,9 +16,13 @@ import (
 func TestEmojiCatalogue(t *testing.T) {
 	entries := loadEmojiCatalogue()
 
-	if len(entries) < 1300 {
+	// gemoji has ~1,390 simple glyphs; ~300 are newer than the bundled emoji
+	// font and are dropped (#543).
+	if len(entries) < 1000 {
 		t.Fatalf("catalogue = %d entries, want the renderable gemoji set", len(entries))
 	}
+
+	drawable := bundledGlyphs()
 
 	categories := make(map[string]bool)
 	seen := make(map[string]bool)
@@ -30,6 +34,10 @@ func TestEmojiCatalogue(t *testing.T) {
 
 		if !simpleEmoji(entry.Emoji) {
 			t.Errorf("%q is a complex sequence the picker should have dropped", entry.Emoji)
+		}
+
+		if !drawable(entry.Emoji) {
+			t.Errorf("%q is in no bundled font, so the picker would show an empty cell", entry.Emoji)
 		}
 
 		if seen[entry.Emoji] {
@@ -44,6 +52,38 @@ func TestEmojiCatalogue(t *testing.T) {
 		if !categories[want] {
 			t.Errorf("category %q is missing from the catalogue", want)
 		}
+	}
+}
+
+// The picker keeps the glyphs the bundled fonts draw and drops the ones that
+// would fall back to a system font the painter cannot draw (#543).
+func TestEmojiCatalogueDropsGlyphsNoBundledFontDraws(t *testing.T) {
+	drawable := bundledGlyphs()
+
+	for _, glyph := range []string{"🚀", "📦", "🏷️", "❤️", "😀", "#️⃣"} {
+		if !drawable(glyph) {
+			t.Errorf("%q should be drawable from the bundled fonts", glyph)
+		}
+	}
+
+	offered := make(map[string]bool)
+	for _, entry := range loadEmojiCatalogue() {
+		offered[entry.Emoji] = true
+	}
+
+	// Emoji 11+ glyphs and a subdivision flag, none in EmojiOne.
+	for _, glyph := range []string{"🧠", "🥰", "🟢", "🧰", "🏴\U000e0067\U000e0062\U000e0065\U000e006e\U000e0067\U000e007f"} {
+		if drawable(glyph) {
+			t.Errorf("%q should not be drawable from the bundled fonts", glyph)
+		}
+
+		if offered[glyph] {
+			t.Errorf("the picker offers %q, which would render as an empty cell", glyph)
+		}
+	}
+
+	if !offered["🚀"] {
+		t.Error("the picker dropped 🚀, which the bundled emoji font draws")
 	}
 }
 
@@ -291,4 +331,43 @@ func findTable(object fyne.CanvasObject) *widget.Table {
 	}
 
 	return nil
+}
+
+// An icon set before #543 (from the CLI, an import or an older picker) can be a
+// glyph no bundled font draws. The window leaves it out of titles and labels so
+// the name keeps its left edge, and the button says an icon is set (#547).
+func TestUndrawableIconIsLeftOutOfTheWindow(t *testing.T) {
+	const brain = "🧠" // Emoji 10, not in the bundled EmojiOne set
+
+	if got := drawableIcon(brain); got != "" {
+		t.Fatalf("drawableIcon(%q) = %q, want it dropped", brain, got)
+	}
+
+	if got := drawableIcon(" 🚀 "); got != "🚀" {
+		t.Errorf("drawableIcon(🚀) = %q, want it kept", got)
+	}
+
+	header := newCardHeader(brain, "think")
+	if header.text.Text != "think" {
+		t.Errorf("header = %q, want the name alone", header.text.Text)
+	}
+
+	// The caption is indented by the icon's width; an icon that is not drawn
+	// must not indent it.
+	plain := newCardHeader("", "think")
+	header.setDetail("echo hi")
+	plain.setDetail("echo hi")
+
+	if plain.caption.MinSize() != header.caption.MinSize() {
+		t.Errorf("caption indented by an icon that is not drawn: %v vs %v", header.caption.MinSize(), plain.caption.MinSize())
+	}
+
+	if got := groupLabel(brain, "ideas"); got != "ideas" {
+		t.Errorf("groupLabel = %q, want the name alone", got)
+	}
+
+	button := newEmojiButton(brain, nil)
+	if button.text.Text != "?" || button.value != brain {
+		t.Errorf("button shows %q holding %q; want ? and the stored icon kept", button.text.Text, button.value)
+	}
 }

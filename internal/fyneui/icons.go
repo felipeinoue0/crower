@@ -3,6 +3,7 @@
 package fyneui
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/go-text/typesetting/font"
 )
 
 //go:embed emoji/emoji.json
@@ -58,9 +60,10 @@ func loadEmojiCatalogue() []emojiEntry {
 		}
 
 		emojiCatalogue = make([]emojiEntry, 0, len(raw))
+		drawable := drawableGlyph()
 
 		for _, entry := range raw {
-			if entry.Emoji == "" || !simpleEmoji(entry.Emoji) {
+			if entry.Emoji == "" || !simpleEmoji(entry.Emoji) || !drawable(entry.Emoji) {
 				continue
 			}
 
@@ -87,6 +90,78 @@ func simpleEmoji(glyph string) bool {
 	}
 
 	return true
+}
+
+// bundledGlyphs reports whether every codepoint of a glyph is in a font Fyne
+// ships: the text font, the bundled emoji font or the symbol font.
+//
+// Those are the only fonts the painter is sure to draw. A codepoint none of them
+// covers falls back to a system font, and the painter often cannot draw that
+// font (a colour-bitmap emoji font such as Noto Color Emoji), so the glyph comes
+// out as an empty cell. The bundled EmojiOne set stops around Emoji 11: without
+// this check, 300 of the picker's emoji (🧠, 🥰, 🟢, 🧰, …) were blank (#543).
+//
+// The variation selector and the keycap mark only change how the base glyph is
+// shown, so they are not looked up.
+func bundledGlyphs() func(string) bool {
+	var faces []*font.Face
+
+	for _, resource := range []fyne.Resource{theme.DefaultTextFont(), theme.DefaultEmojiFont(), theme.DefaultSymbolFont()} {
+		if resource == nil {
+			continue // a build with -tags no_emoji has no emoji font
+		}
+
+		face, err := font.ParseTTF(bytes.NewReader(resource.Content()))
+		if err != nil {
+			fyne.LogError("reading a bundled font", err)
+			continue
+		}
+
+		faces = append(faces, face)
+	}
+
+	covered := func(r rune) bool {
+		for _, face := range faces {
+			if _, ok := face.NominalGlyph(r); ok {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	return func(glyph string) bool {
+		for _, r := range glyph {
+			if r == '\ufe0f' || r == '\u20e3' {
+				continue
+			}
+
+			if !covered(r) {
+				return false
+			}
+		}
+
+		return true
+	}
+}
+
+// drawableGlyph is bundledGlyphs parsed once: card headers and group labels
+// ask on every rebuild.
+var drawableGlyph = sync.OnceValue(bundledGlyphs)
+
+// drawableIcon is icon when a bundled font draws it, and "" otherwise.
+//
+// An icon can come from the CLI, an import or an older picker, so it can be a
+// glyph the window would draw as a blank gap before the name. Leaving it out
+// keeps the name on the same left edge as an icon-less one; the stored value
+// is untouched and the terminal still shows it (#547).
+func drawableIcon(icon string) string {
+	icon = strings.TrimSpace(icon)
+	if icon == "" || !drawableGlyph()(icon) {
+		return ""
+	}
+
+	return icon
 }
 
 // filterEmoji returns entries whose name, alias or tag contains query, and
@@ -301,7 +376,9 @@ func newEmojiButton(value string, onTapped func()) *emojiButton {
 	button.text = canvas.NewText("", theme.Color(theme.ColorNameForeground))
 	button.text.Alignment = fyne.TextAlignCenter
 
-	button.box = container.NewGridWrap(fyne.NewSize(48, 48), container.NewStack(
+	// The window's one button height, square: a 48px box beside a 40px Delete
+	// made the Groups row look misaligned (#545).
+	button.box = container.NewGridWrap(fyne.NewSize(buttonHeight, buttonHeight), container.NewStack(
 		button.background,
 		container.NewCenter(button.text),
 	))
@@ -322,16 +399,26 @@ func (b *emojiButton) Tapped(*fyne.PointEvent) {
 	}
 }
 
+// emojiButtonTextSize fills the 40px button with the glyph and leaves a margin
+// inside its border.
+const emojiButtonTextSize float32 = 24
+
 // SetEmoji shows the emoji at a readable size; an empty value shows "Pick".
 func (b *emojiButton) SetEmoji(value string) {
 	b.value = strings.TrimSpace(value)
 
-	if b.value == "" {
+	switch {
+	case b.value == "":
 		b.text.Text = "Pick"
 		b.text.TextSize = theme.Size(theme.SizeNameText)
-	} else {
+	case drawableIcon(b.value) == "":
+		// An icon is set but the window cannot draw it: say so rather than
+		// show an empty box (#547).
+		b.text.Text = "?"
+		b.text.TextSize = theme.Size(theme.SizeNameText)
+	default:
 		b.text.Text = b.value
-		b.text.TextSize = 28
+		b.text.TextSize = emojiButtonTextSize
 	}
 
 	b.text.Refresh()

@@ -508,9 +508,9 @@ func TestCommandActionsRunFirstAndAreColoured(t *testing.T) {
 		t.Errorf("Edit importance = %v, want high", card.edit.Importance)
 	}
 
-	// Delete is quiet: a neutral face with a red icon, so it does not read as
-	// raised beside the filled Run and Edit (#550).
-	assertQuiet(t, "Delete", card.remove, theme.ColorNameError)
+	if card.remove.Importance != widget.DangerImportance {
+		t.Errorf("Delete importance = %v, want danger", card.remove.Importance)
+	}
 
 	if card.run.Position().X >= card.edit.Position().X {
 		t.Errorf("Run x = %.1f, Edit x = %.1f: Run is not first", card.run.Position().X, card.edit.Position().X)
@@ -1049,20 +1049,5 @@ func TestCommandHeaderShowsTheIconInLine(t *testing.T) {
 
 	if bare := newCardHeader("", "deploy"); bare.text.Text != "deploy" {
 		t.Errorf("a command without an icon draws %q, want the bare name", bare.text.Text)
-	}
-}
-
-// assertQuiet checks a secondary action is a neutral button whose icon carries
-// the action's colour (#550).
-func assertQuiet(t *testing.T, label string, button *appButton, color fyne.ThemeColorName) {
-	t.Helper()
-
-	if button.Importance != widget.MediumImportance {
-		t.Errorf("%s importance = %v, want medium (a neutral face)", label, button.Importance)
-	}
-
-	themed, ok := button.Icon.(fyne.ThemedResource)
-	if !ok || themed.ThemeColorName() != color {
-		t.Errorf("%s icon = %#v, want one coloured %q", label, button.Icon, color)
 	}
 }

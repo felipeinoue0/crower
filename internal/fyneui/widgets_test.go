@@ -3,11 +3,13 @@
 package fyneui
 
 import (
+	"image"
 	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/driver/software"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -452,4 +454,87 @@ func TestRevealOffset(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A labelled button's icon is centred on its label's capitals, not 1px above
+// them: a solid icon (the trash can, the clock) sitting high made Delete and
+// Restore read as raised beside Run and Edit (#555).
+func TestButtonIconMeetsItsLabel(t *testing.T) {
+	useAppTheme(t)
+
+	buttons := []*appButton{
+		newButton("Run", theme.MediaPlayIcon(), widget.SuccessImportance, nil),
+		newButton("Edit", theme.DocumentCreateIcon(), widget.HighImportance, nil),
+		newButton("Delete", theme.DeleteIcon(), widget.DangerImportance, nil),
+		newButton("Restore this state", theme.HistoryIcon(), widget.WarningImportance, nil),
+	}
+
+	objects := make([]fyne.CanvasObject, len(buttons))
+	for i, button := range buttons {
+		objects[i] = button
+	}
+
+	row := spacedActions(objects...)
+	painter := software.NewCanvas()
+	painter.SetContent(row)
+	painter.Resize(fyne.NewSize(500, 56))
+	img := painter.Capture()
+
+	for _, button := range buttons {
+		pos := button.Position().Add(row.Position())
+		box := image.Rect(int(pos.X)+3, int(pos.Y)+3, int(pos.X+button.Size().Width)-3, int(pos.Y+button.Size().Height)-3)
+
+		icon, label := iconAndLabelRows(img, box)
+		if diff := label - icon; diff > 0.5 || diff < -0.5 {
+			t.Errorf("%s: icon centre %.1f, label centre %.1f; want them on one line", button.Text, icon, label)
+		}
+	}
+}
+
+// iconAndLabelRows returns the vertical centres of the ink in a button: the
+// first cluster of columns is the icon, the rest is the label.
+func iconAndLabelRows(img image.Image, box image.Rectangle) (float64, float64) {
+	br, bg, bb, _ := img.At(box.Min.X+1, (box.Min.Y+box.Max.Y)/2).RGBA()
+	ink := func(x, y int) bool {
+		r, g, b, _ := img.At(x, y).RGBA()
+		d := func(a, c uint32) int { return max(int(a>>8)-int(c>>8), int(c>>8)-int(a>>8)) }
+		return d(r, br)+d(g, bg)+d(b, bb) > 200
+	}
+
+	var columns []int
+	for x := box.Min.X; x < box.Max.X; x++ {
+		for y := box.Min.Y; y < box.Max.Y; y++ {
+			if ink(x, y) {
+				columns = append(columns, x)
+				break
+			}
+		}
+	}
+
+	if len(columns) == 0 {
+		return 0, 0
+	}
+
+	split := columns[len(columns)-1] + 1
+	for i := 1; i < len(columns); i++ {
+		if columns[i]-columns[i-1] >= 4 {
+			split = columns[i]
+			break
+		}
+	}
+
+	centre := func(from, to int) float64 {
+		top, bottom := box.Max.Y, box.Min.Y
+		for y := box.Min.Y; y < box.Max.Y; y++ {
+			for x := from; x < to; x++ {
+				if ink(x, y) {
+					top, bottom = min(top, y), max(bottom, y)
+				}
+			}
+		}
+
+		return float64(top+bottom) / 2
+	}
+
+	return centre(columns[0], split), centre(split, box.Max.X)
 }

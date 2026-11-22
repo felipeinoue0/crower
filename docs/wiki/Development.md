@@ -37,6 +37,35 @@ make dev-down       # stop it
 On any OS with Docker and no `make`: `docker compose up`. On native Windows:
 `python scripts/dev-up.py dev-up`.
 
+## 🖥️ The GUI on your host
+
+`make check` does **not** compile the Fyne window: every file in
+`internal/fyneui` is behind `//go:build fyne`, so the gate neither builds nor
+vets it.
+
+```bash
+make gui-deps                 # the system packages it needs, on Linux
+sudo make gui-deps INSTALL=1  # install them
+CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui
+```
+
+Skip the headers and the build stops at
+`wayland-client-core.h: No such file or directory` — a C error, not a Go one,
+so it reads like a broken checkout. `make dev-shell` needs none of this: the
+sandbox image already carries the toolchain and the headers.
+
+An editor without the tag reports the whole package as undefined
+(`undefined: newGrowingEntry`). The committed `.vscode/settings.json` sets
+`buildTags: fyne` and `CGO_ENABLED=1`; for another editor, give `gopls`
+`buildFlags: ["-tags=fyne"]`.
+
+`fyne.yml` is the only gate that builds and tests this package, and it is
+manual dispatch:
+
+```bash
+gh workflow run fyne.yml --ref <branch>
+```
+
 ## 🏛️ Layout
 
 Four rings, one dependency direction, and a gate in `architecture_test.go` that

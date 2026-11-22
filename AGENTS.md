@@ -108,6 +108,13 @@ The container pins Go 1.25.4 — the version in `go.mod` — so a build inside t
 sandbox is the build CI runs. The sandbox is **optional**: a host toolchain
 still works, and `make check` does not require Docker.
 
+The GUI is the one exception: `internal/fyneui` is behind `//go:build fyne` and
+needs CGO plus the X11/GL and Wayland headers, which the image has and a bare
+host usually does not. `make gui-deps` prints that package list
+(`INSTALL=1` installs it); without the headers the build fails on a C header,
+not on Go. `make check` never compiles the package, so the local gate cannot
+report either problem — `fyne.yml` is its only gate.
+
 The image creates the directories the compose file mounts into, owned by the
 runtime user: Docker creates a mount destination the image does not contain as
 **root**, and the container runs as `${HOST_UID}`, so a sandbox whose image

@@ -37,7 +37,7 @@ LINUX_TAR := $(BUILD_DIR)/$(APP_NAME)_$(VERSION)_linux.tar.gz
 LINUX_SCRIPT :=  $(SCRIPTS_DIR)/$(SCRIPT_NAME).sh
 
 
-.PHONY: all windows linux zip_linux zip_windows clean release check \
+.PHONY: all windows linux zip_linux zip_windows clean release check gui-deps \
 	help dev-up dev-down dev-shell dev-opencode dev-opencode-auto dev-log dev-build reset \
 	preflight prepare-agent-mounts check-identity \
 	shell opencode opencode-auto release-platform release-gui-platform package-cli package-gui verify-release
@@ -172,6 +172,34 @@ else
 	tar -czvf $(CLI_ARCHIVE) -C $(GUI_PACKAGE) $(APP_NAME)$(EXT) $(APP_NAME_SHORT)$(EXT) $(GUI_NAME)$(EXT) $(SCRIPT_NAME)$(SCRIPT_EXT) README.md NOTICE LICENSE LICENSE-APACHE LICENSE-FYNE
 endif
 	@echo "Platform package: $(CLI_ARCHIVE)"
+
+
+# ---------------------------------------------------------------------------
+# Host prerequisites for the Fyne window
+#
+# `crower-gui` is a CGO build behind `-tags fyne`, so the C toolchain needs the
+# X11/GL and Wayland development headers. The dev sandbox and every CI job
+# install them; a developer's machine usually has not, and the failure is a
+# missing C header (`wayland-client-core.h`) rather than anything Go reports —
+# so it reads like a broken checkout when it is a missing apt package.
+#
+# The list lives here and nowhere else: `fyne.yml` and `release.yml` call this
+# target instead of repeating it, so CI and a host install the same packages.
+#
+# Stdout is the bare package list, so a workflow can consume it with
+# `$(make -s gui-deps)`; the hint for a human goes to stderr.
+# ---------------------------------------------------------------------------
+GUI_DEPS := build-essential libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
+
+gui-deps: ## Print the Linux packages the Fyne GUI needs (INSTALL=1 installs them)
+ifeq ($(INSTALL),1)
+	sudo apt-get update
+	sudo apt-get install -y $(GUI_DEPS)
+else
+	@echo $(GUI_DEPS)
+	@echo "Install them with: sudo make gui-deps INSTALL=1" >&2
+	@echo "Then build with:   CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui" >&2
+endif
 
 
 # ---------------------------------------------------------------------------

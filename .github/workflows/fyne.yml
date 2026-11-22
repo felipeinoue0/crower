@@ -34,9 +34,12 @@ jobs:
           cache: true
 
       - name: Install X11/GL and Wayland headers
+        # The package list is `make gui-deps`, so CI and a developer's host
+        # install the same set. xvfb is CI-only: the headless runs below need a
+        # display that a developer's machine already has.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev xorg-dev xvfb libwayland-dev libxkbcommon-dev wayland-protocols
+          sudo apt-get install -y $(make -s gui-deps) xvfb
 
       - name: Build with the fyne tag
         run: CGO_ENABLED=1 go build -tags fyne ./...

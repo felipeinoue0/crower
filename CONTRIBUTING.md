@@ -47,6 +47,36 @@ Running the program and reporting exactly what happened — including "it worked
   steps). It is written for the agent, but it is the same bar a human patch is
   held to.
 
+## Build the GUI on your host
+
+`make check` does **not** compile the Fyne window. Every file in
+`internal/fyneui` is behind `//go:build fyne`, so the gate neither builds nor
+vets that package — it has its own prerequisites, and its own gate
+(`fyne.yml`).
+
+```bash
+make gui-deps                 # the system packages it needs, on Linux
+sudo make gui-deps INSTALL=1  # install them
+CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui
+```
+
+Without those headers the build stops at a C header rather than at Go —
+`wayland-client-core.h: No such file or directory` — which reads like a broken
+checkout when it is a missing apt package. The dev sandbox already has them, so
+`make dev-shell` is the zero-setup route.
+
+Your editor needs the tag too, or every symbol in the package reads as
+undefined (`undefined: newGrowingEntry` is the usual first one). The committed
+`.vscode/settings.json` sets it; for another editor, give `gopls`
+`buildFlags: ["-tags=fyne"]` and keep `CGO_ENABLED=1` in its environment.
+
+Nothing here is proven by `make check`. The gate for this package is a
+dispatch:
+
+```bash
+gh workflow run fyne.yml --ref <branch>
+```
+
 ## About the AI
 
 This project is developed with an AI agent doing much of the implementation, and

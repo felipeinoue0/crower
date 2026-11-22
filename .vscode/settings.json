@@ -1,0 +1,18 @@
+{
+  // internal/fyneui is behind `//go:build fyne`, so without the tag every
+  // symbol in the package reads as undefined (`undefined: newGrowingEntry`) and
+  // nothing in it type-checks. `make check` skips the package for the same
+  // reason, which is why the editor has to be told.
+  //
+  // The tag alone is not enough: gopls also has to load fyne.io/fyne/v2, which
+  // is a CGO package. Install the headers with `sudo make gui-deps INSTALL=1`
+  // first — see CONTRIBUTING.md, "Build the GUI on your host".
+  "go.buildTags": "fyne",
+  "go.testTags": "fyne",
+  "go.toolsEnvVars": {
+    "CGO_ENABLED": "1"
+  },
+  "gopls": {
+    "build.buildFlags": ["-tags=fyne"]
+  }
+}

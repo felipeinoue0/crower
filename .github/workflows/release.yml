@@ -144,9 +144,11 @@ jobs:
 
       - name: Install X11/GL and Wayland headers
         if: matrix.goos == 'linux'
+        # `make gui-deps` is the one place the package list lives; see the
+        # target's comment in the Makefile.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
+          sudo apt-get install -y $(make -s gui-deps)
 
       - name: Build the platform archive
         env:

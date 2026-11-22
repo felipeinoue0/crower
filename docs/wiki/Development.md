@@ -44,15 +44,21 @@ On any OS with Docker and no `make`: `docker compose up`. On native Windows:
 vets it.
 
 ```bash
-make gui-deps                 # the system packages it needs, on Linux
-sudo make gui-deps INSTALL=1  # install them
-CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui
+make gui_linux    # one command: build/crower-gui for this machine
 ```
 
-Skip the headers and the build stops at
-`wayland-client-core.h: No such file or directory` — a C error, not a Go one,
-so it reads like a broken checkout. `make dev-shell` needs none of this: the
-sandbox image already carries the toolchain and the headers.
+The header check runs first, so a machine without them stops at the install
+command for its distro — apt, dnf or pacman — instead of
+`wayland-client-core.h: No such file or directory`, a C error that reads like a
+broken checkout:
+
+```bash
+make gui-deps                 # the system packages, for your distro
+sudo make gui-deps INSTALL=1  # install them, then re-run make gui_linux
+```
+
+It never runs `sudo` itself. `make dev-shell` needs none of this: the sandbox
+image already carries the toolchain and the headers.
 
 An editor without the tag reports the whole package as undefined
 (`undefined: newGrowingEntry`). The committed `.vscode/settings.json` sets

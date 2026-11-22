@@ -55,15 +55,22 @@ vets that package — it has its own prerequisites, and its own gate
 (`fyne.yml`).
 
 ```bash
-make gui-deps                 # the system packages it needs, on Linux
-sudo make gui-deps INSTALL=1  # install them
-CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui
+make gui_linux    # one command: build/crower-gui for this machine
 ```
 
-Without those headers the build stops at a C header rather than at Go —
-`wayland-client-core.h: No such file or directory` — which reads like a broken
-checkout when it is a missing apt package. The dev sandbox already has them, so
-`make dev-shell` is the zero-setup route.
+`make gui_linux` checks the headers **before** it compiles anything, so a
+machine without them stops at the install command for its distro — apt, dnf or
+pacman — rather than at `wayland-client-core.h: No such file or directory`,
+which reads like a broken checkout when it is three missing packages:
+
+```bash
+make gui-deps                 # the system packages, for your distro
+sudo make gui-deps INSTALL=1  # install them, then re-run make gui_linux
+```
+
+It never runs `sudo` itself: installing system packages is a step you ask for
+by name. The dev sandbox already has the headers, so `make dev-shell` is the
+zero-setup route if you would rather not install them on the host.
 
 Your editor needs the tag too, or every symbol in the package reads as
 undefined (`undefined: newGrowingEntry` is the usual first one). The committed

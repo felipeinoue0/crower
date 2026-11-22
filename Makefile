@@ -37,7 +37,7 @@ LINUX_TAR := $(BUILD_DIR)/$(APP_NAME)_$(VERSION)_linux.tar.gz
 LINUX_SCRIPT :=  $(SCRIPTS_DIR)/$(SCRIPT_NAME).sh
 
 
-.PHONY: all windows linux zip_linux zip_windows clean release check gui-deps \
+.PHONY: all windows linux zip_linux zip_windows clean release check gui-deps gui_linux \
 	help dev-up dev-down dev-shell dev-opencode dev-opencode-auto dev-log dev-build reset \
 	preflight prepare-agent-mounts check-identity \
 	shell opencode opencode-auto release-platform release-gui-platform package-cli package-gui verify-release
@@ -175,31 +175,53 @@ endif
 
 
 # ---------------------------------------------------------------------------
-# Host prerequisites for the Fyne window
+# Host prerequisites for the Fyne window, and the one-command build for it
 #
 # `crower-gui` is a CGO build behind `-tags fyne`, so the C toolchain needs the
 # X11/GL and Wayland development headers. The dev sandbox and every CI job
 # install them; a developer's machine usually has not, and the failure is a
 # missing C header (`wayland-client-core.h`) rather than anything Go reports —
-# so it reads like a broken checkout when it is a missing apt package.
+# so it reads like a broken checkout when it is a missing distro package.
 #
-# The list lives here and nowhere else: `fyne.yml` and `release.yml` call this
-# target instead of repeating it, so CI and a host install the same packages.
-#
-# Stdout is the bare package list, so a workflow can consume it with
-# `$(make -s gui-deps)`; the hint for a human goes to stderr.
+# The package lists live in scripts/gui-deps.sh and nowhere else, because the
+# answer depends on the distro: `fyne.yml` and `release.yml` pipe the Debian
+# names into apt-get on an Ubuntu runner, and a Fedora host needs the dnf names
+# instead. `fyne.yml` consumes `make -s gui-deps`, so that target's stdout must
+# stay the bare list. Stdout is the list; every hint goes to stderr.
 # ---------------------------------------------------------------------------
-GUI_DEPS := build-essential libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev wayland-protocols
+
+GUI_DEPS_SCRIPT := $(SCRIPTS_DIR)/gui-deps.sh
 
 gui-deps: ## Print the Linux packages the Fyne GUI needs (INSTALL=1 installs them)
 ifeq ($(INSTALL),1)
-	sudo apt-get update
-	sudo apt-get install -y $(GUI_DEPS)
+	@$(GUI_DEPS_SCRIPT) install
 else
-	@echo $(GUI_DEPS)
+	@$(GUI_DEPS_SCRIPT) list
 	@echo "Install them with: sudo make gui-deps INSTALL=1" >&2
-	@echo "Then build with:   CGO_ENABLED=1 go build -tags fyne ./cmd/crowergui" >&2
+	@echo "Then build with:   make gui_linux" >&2
 endif
+
+# One command for the window on your own machine: `make gui_linux` →
+# build/crower-gui, runnable as-is, with the tag's version in it.
+#
+# The header check runs first, so a machine without the headers gets the
+# install command for its distro instead of a C error at the end of a compile.
+# It also means this target never runs sudo itself: installing system packages
+# is `make gui-deps INSTALL=1`, a step the developer asks for by name.
+#
+# The archive is a different target: `make release-gui-platform` builds all
+# three binaries and packages them.
+gui_linux: $(BUILD_DIR) ## Build crower-gui for this machine (checks headers first)
+	@test "$$(go env GOHOSTOS)" = linux || { \
+		echo "ERROR: gui_linux builds the Linux window, and this is $$(go env GOHOSTOS)." >&2; \
+		echo "       Build it directly instead:" >&2; \
+		echo "       CGO_ENABLED=1 go build -tags fyne -ldflags \"$(GUI_LDFLAGS)\" -o $(BUILD_DIR)/$(GUI_NAME) ./cmd/crowergui" >&2; \
+		exit 1; \
+	}
+	@$(GUI_DEPS_SCRIPT) check
+	CGO_ENABLED=1 GOOS=linux go build -tags fyne -ldflags "$(GUI_LDFLAGS)" -o $(BUILD_DIR)/$(GUI_NAME) ./cmd/crowergui
+	@echo ""
+	@echo "Built $(BUILD_DIR)/$(GUI_NAME) — run it with ./$(BUILD_DIR)/$(GUI_NAME)"
 
 
 # ---------------------------------------------------------------------------

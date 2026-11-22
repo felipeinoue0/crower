@@ -77,6 +77,7 @@ CONTRIBUTING.md      the contributor contract (issue first, make check, evidence
 ```bash
 make check           # the local gate: gofmt, vet, test, build
 make release         # build the Windows and Linux release archives into build/
+make gui_linux       # the Fyne window, built for this machine into build/
 make clean           # remove build/
 go run ./ --help     # run from source
 go test ./...        # tests only
@@ -110,10 +111,13 @@ still works, and `make check` does not require Docker.
 
 The GUI is the one exception: `internal/fyneui` is behind `//go:build fyne` and
 needs CGO plus the X11/GL and Wayland headers, which the image has and a bare
-host usually does not. `make gui-deps` prints that package list
-(`INSTALL=1` installs it); without the headers the build fails on a C header,
-not on Go. `make check` never compiles the package, so the local gate cannot
-report either problem — `fyne.yml` is its only gate.
+host usually does not. `make gui_linux` builds the window for the host in one
+command, and checks those headers first — so a machine without them gets the
+install command for its distro (apt, dnf or pacman) instead of a C header
+error. `make gui-deps` prints that package list (`INSTALL=1` installs it);
+without the headers the build fails on a C header, not on Go. `make check`
+never compiles the package, so the local gate cannot report either problem —
+`fyne.yml` is its only gate.
 
 The image creates the directories the compose file mounts into, owned by the
 runtime user: Docker creates a mount destination the image does not contain as

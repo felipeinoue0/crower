@@ -91,7 +91,8 @@ func TestCmdMacrosRunInCmd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
-			line := doskeyExpand(macro, tt.args) + " & cd"
+			// Parenthesised: cmd would bind a bare "& cd" to the last else only.
+			line := "(" + doskeyExpand(macro, tt.args) + ") & cd"
 
 			cmd := exec.Command("cmd")
 			cmd.SysProcAttr = &syscall.SysProcAttr{CmdLine: `cmd /d /s /c "` + line + `"`}

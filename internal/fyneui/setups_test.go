@@ -10,9 +10,9 @@ import (
 
 	"fyne.io/fyne/v2"
 
-	"github.com/fiwon123/crower/internal/desktop"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // stubSetups switches between two canned command sets.

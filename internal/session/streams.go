@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/output"
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/errors"
 )
 
 // Streams is the I/O surface of a run. It is the output adapter's type: the

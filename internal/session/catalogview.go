@@ -1,8 +1,8 @@
 package session
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // Catalog returns the managed commands as the domain aggregate.

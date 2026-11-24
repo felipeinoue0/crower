@@ -3,8 +3,8 @@ package cmd
 import (
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/desktop"
 )
 
 // The window remembers a size that can open, and ignores one that cannot.

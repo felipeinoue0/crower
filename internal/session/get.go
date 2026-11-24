@@ -1,8 +1,8 @@
 package session
 
 import (
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // Get last operation

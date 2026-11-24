@@ -5,7 +5,7 @@ package fyneui
 import (
 	"fyne.io/fyne/v2"
 
-	"github.com/fiwon123/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/desktop"
 )
 
 // WindowStore remembers the window's size between runs.

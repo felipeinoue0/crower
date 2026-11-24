@@ -2,11 +2,11 @@ package session
 
 import (
 	"fmt"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 	"maps"
 	"slices"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
 )
 
 // FindCommand resolves a key inside a history snapshot. A name wins over an

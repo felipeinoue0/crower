@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/github"
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/adapters/update"
-	"github.com/fiwon123/crower/internal/application/upgradeapp"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/github"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/update"
+	"github.com/felipeinoue0/crower/internal/application/upgradeapp"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // updateCheckTimeout bounds the window's release lookup. Opening crower must

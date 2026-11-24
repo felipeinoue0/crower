@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/application/resetcommands"
+	"github.com/felipeinoue0/crower/internal/application/resetcommands"
 
 	"github.com/spf13/cobra"
 )

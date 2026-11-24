@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/shellhook"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/adapters/shellhook"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 
 	"github.com/spf13/cobra"
 )

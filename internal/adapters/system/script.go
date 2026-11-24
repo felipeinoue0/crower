@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // Scripts writes the script file a `create --script` command runs.

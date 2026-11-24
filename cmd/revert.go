@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/application/reverthistory"
+	"github.com/felipeinoue0/crower/internal/application/reverthistory"
 
 	"github.com/spf13/cobra"
 )

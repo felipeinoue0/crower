@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/fyneui"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/fyneui"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // windowHelp is what the window binary answers to --help. The window itself has

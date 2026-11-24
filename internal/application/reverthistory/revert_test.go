@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/reverthistory"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/reverthistory"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 type fakeHistory struct {

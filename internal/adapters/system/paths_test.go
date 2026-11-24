@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
 )
 
 func TestPathsIsFile(t *testing.T) {

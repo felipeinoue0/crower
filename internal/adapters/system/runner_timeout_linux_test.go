@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
-	crerrors "github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	crerrors "github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // A timeout has to kill the step, not just the shell that started it: killing

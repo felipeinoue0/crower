@@ -258,7 +258,7 @@ jobs:
 
           mkdir -p build
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 \
-            go build -ldflags "-X github.com/fiwon123/crower/cmd.Version=${VERSION}" \
+            go build -ldflags "-X github.com/felipeinoue0/crower/cmd.Version=${VERSION}" \
             -o "build/crower${EXT}" .
           cp "build/crower${EXT}" "build/cr${EXT}"
 

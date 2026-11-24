@@ -3,7 +3,7 @@ package session
 import (
 	"fmt"
 
-	"github.com/fiwon123/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
 )
 
 // Format is how an operation with a structured result renders it.

@@ -24,12 +24,12 @@ any of the following.
 
 ## 📋 Before you start
 
-- Use a **release build** from [Releases](https://github.com/fiwon123/crower/releases)
+- Use a **release build** from [Releases](https://github.com/felipeinoue0/crower/releases)
   — a build from source proves something about your tree, not about the download.
 - Record the version: `crower --version`.
 - Note the platform and architecture: the archive name has both.
 
-## 🍎 1. The macOS build runs — [#129](https://github.com/fiwon123/crower/issues/129)
+## 🍎 1. The macOS build runs — [#129](https://github.com/felipeinoue0/crower/issues/129)
 
 The darwin archives are cross-compiled on Linux and never executed. There is an
 open report that shell-backed operations silently do nothing on macOS.
@@ -101,4 +101,4 @@ The tests use isolated temp directories; nobody has replayed a long real session
 ---
 
 🤝 [Contributing](How-to-Contribute) ·
-🐛 [Issues](https://github.com/fiwon123/crower/issues)
+🐛 [Issues](https://github.com/felipeinoue0/crower/issues)

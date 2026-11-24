@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // Variable removes one `export NAME=` line from ~/.zshrc.

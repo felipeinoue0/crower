@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/output"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // The table is both `list`'s result and every prompt's question, so its bytes

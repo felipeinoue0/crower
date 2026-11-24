@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // Target is where and how one line runs: the shell, the working directory, the

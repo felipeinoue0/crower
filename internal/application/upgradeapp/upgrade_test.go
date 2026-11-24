@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/upgradeapp"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/upgradeapp"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 type fakeState struct {

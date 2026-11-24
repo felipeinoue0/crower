@@ -3,12 +3,12 @@ package cmd
 import (
 	"os"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/output"
-	"github.com/fiwon123/crower/internal/adapters/system"
-	"github.com/fiwon123/crower/internal/adapters/terminal"
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/adapters/terminal"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/session"
 
 	"github.com/spf13/cobra"
 )

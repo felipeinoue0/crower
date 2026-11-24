@@ -6,10 +6,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // Listings runs the platform listings and reads a directory for a structured

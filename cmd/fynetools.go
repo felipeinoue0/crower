@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/application/extractcontent"
-	"github.com/fiwon123/crower/internal/application/opencontent"
-	"github.com/fiwon123/crower/internal/application/searchcontent"
-	"github.com/fiwon123/crower/internal/application/transfercontent"
-	"github.com/fiwon123/crower/internal/desktop"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/domain/timeline"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/application/extractcontent"
+	"github.com/felipeinoue0/crower/internal/application/opencontent"
+	"github.com/felipeinoue0/crower/internal/application/searchcontent"
+	"github.com/felipeinoue0/crower/internal/application/transfercontent"
+	"github.com/felipeinoue0/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // fyneTools runs the file operations from the window through the same use

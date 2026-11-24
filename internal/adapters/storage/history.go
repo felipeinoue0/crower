@@ -2,14 +2,14 @@ package storage
 
 import (
 	"fmt"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 const (

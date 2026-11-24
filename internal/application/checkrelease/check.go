@@ -2,7 +2,7 @@
 package checkrelease
 
 import (
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // Releases names the newest published release.
@@ -60,7 +60,7 @@ func (useCase *UseCase) Run(currentVersion string) error {
 	}
 
 	useCase.output.Info("New Version Found: ", newVersion)
-	useCase.output.Info("Check: https://github.com/fiwon123/crower/releases/latest")
+	useCase.output.Info("Check: https://github.com/felipeinoue0/crower/releases/latest")
 
 	return useCase.history.Record(operation.Check, "", useCase.notes.Check())
 }

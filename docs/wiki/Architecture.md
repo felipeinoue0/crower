@@ -115,7 +115,7 @@ and `internal/session/persist_test.go` pins them.
 ## 🔐 Two decisions worth knowing
 
 - **`cmd` is not behind a layer.** The release injects the version at build time
-  with `-X github.com/fiwon123/crower/cmd.Version`; moving the package would
+  with `-X github.com/felipeinoue0/crower/cmd.Version`; moving the package would
   break `Makefile`, `release.yml` and `internal/tools/archiveverify` together.
 - **Ports are declared by the consumer**, not in a shared `ports` package. Go
   connects them structurally, so a use case can only describe what it actually

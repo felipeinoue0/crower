@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // A setup's command count comes from its own configuration file, and looking at

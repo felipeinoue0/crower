@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 func TestSetupConfigPath(t *testing.T) {

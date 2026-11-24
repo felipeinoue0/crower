@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/application/transfercontent"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/transfercontent"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 
 	"github.com/spf13/cobra"
 )

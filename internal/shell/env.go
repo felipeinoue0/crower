@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/errors"
 )
 
 // ValidateEnv checks the environment entries a command declares.

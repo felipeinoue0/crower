@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
-	crerrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	crerrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 // The runner validates the target before starting anything: a typo in Shell

@@ -195,6 +195,10 @@ func buildHook(cmd *cobra.Command, shell string, aliasesOnly bool) (string, erro
 	// wrapper and completion -- so a broken file never breaks the shell.
 	var names []string
 	if cfg, err := newSession(cmd); err == nil {
+		// Only the catalog is needed; release the log file, which Windows
+		// would otherwise keep locked for the rest of the run.
+		defer func() { _ = cfg.Logger.Close() }()
+
 		names = commandWords(cfg.Catalog())
 		opts.Dirs = changeDirs(cfg.Catalog())
 		opts.Here = hereWords(cfg.Catalog())

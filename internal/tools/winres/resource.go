@@ -243,7 +243,7 @@ func align4(value uint32) uint32 {
 func manifest(name, version string) []byte {
 	return fmt.Appendf(nil, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity type="win32" name="com.fiwon123.%s" version="%s" processorArchitecture="*"/>
+  <assemblyIdentity type="win32" name="com.felipeinoue0.%s" version="%s" processorArchitecture="*"/>
   <description>%s</description>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>

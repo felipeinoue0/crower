@@ -296,7 +296,7 @@ func utf16String(data []byte) string {
 func TestManifestIsDPIAndLongPathAware(t *testing.T) {
 	body := string(manifest("crower-gui", "v0.20.15"))
 
-	for _, want := range []string{"com.fiwon123.crower-gui", "permonitorv2", "longPathAware", `level="asInvoker"`, `version="0.20.15.0"`} {
+	for _, want := range []string{"com.felipeinoue0.crower-gui", "permonitorv2", "longPathAware", `level="asInvoker"`, `version="0.20.15.0"`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("manifest does not contain %q", want)
 		}

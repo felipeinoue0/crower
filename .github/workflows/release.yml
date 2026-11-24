@@ -240,7 +240,7 @@ jobs:
           "$(go env GOPATH)/bin/fyne-cross" "${{ matrix.target }}" \
             -arch "${{ matrix.goarch }}" \
             -name crower-gui \
-            -app-id com.fiwon123.crower \
+            -app-id com.felipeinoue0.crower \
             -tags fyne \
             -icon internal/fyneui/logo.png \
             ./cmd/crowergui

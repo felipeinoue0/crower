@@ -3,20 +3,45 @@
 **Every crower command, a command of its own — in bash, zsh, fish, PowerShell and cmd.**
 
 ```bash
-crower init --apply      # once; then open a new terminal
 deploy                   # instead of: crower deploy
 ```
 
 ## ⚡ Set it up
 
-`crower init --apply` detects your shell and writes the line for you. By hand:
+**Nothing to do.** The installers (`install.sh`, `add_to_path.sh`,
+`add_to_path.bat`) run `crower init --all`, which sets up every shell on the
+machine. On a machine set up another way, the first time you run crower in a
+shell without the hook it asks once:
+
+```text
+crower: set up zsh so commands like "cd" work in this terminal? It adds one line to zsh's startup. [Y/n]
+```
+
+Enter sets it up; `n` is remembered for that shell (`~/crower/shell-setup.json`).
+It never asks a script (stdin and stderr must be terminals), inside the hook, or
+when `CROWER_NO_SETUP` is set. Either way, open a new terminal once afterwards —
+a window that is already running cannot load it by itself.
+
+| Command | Does |
+| --- | --- |
+| `crower init --apply` | set up the shell you run it from |
+| `crower init --all` | set up every installed shell (bash, zsh, fish; cmd, Windows PowerShell, PowerShell 7) |
+| `crower init` | show what the current shell needs |
+
+PowerShell is asked where its profile is (`$PROFILE`), so Windows PowerShell 5.1,
+PowerShell 7 and a OneDrive-redirected Documents folder all work. When the
+execution policy blocks profile scripts (`Restricted`, the 5.1 default), crower
+offers to set `RemoteSigned` for your user — scripts written on this computer
+run, downloaded ones must be signed.
+
+By hand:
 
 | Shell | File | Line |
 | --- | --- | --- |
 | bash | `~/.bashrc` | `eval "$(crower init bash)"` |
 | zsh | `~/.zshrc` | `eval "$(crower init zsh)"` |
 | fish | `~/.config/fish/config.fish` | `crower init fish \| source` |
-| PowerShell 7 | `$PROFILE` | `crower init powershell \| Out-String \| Invoke-Expression` |
+| PowerShell (5.1 and 7) | `$PROFILE` | `crower init powershell \| Out-String \| Invoke-Expression` |
 | cmd.exe | — | see [cmd.exe](#-cmdexe) below |
 
 `--apply` writes a guarded form (`command -v crower … && eval …`), so a shell
@@ -67,20 +92,17 @@ Names the hook can define: letters, digits, `_ . + -`, not starting with `-`.
 
 ## 🪟 cmd.exe
 
-cmd has no startup script, so the hook is a doskey macro file:
+cmd has no startup script, so the hook is a doskey macro file that cmd's
+`AutoRun` loads. Setting up cmd (the question, `init --apply` from cmd, or
+`init --all`) writes `%USERPROFILE%\crower\crower.doskey` and adds
+`doskey /macrofile="…" & set "CROWER_HOOK=cmd"` to
+`HKCU\Software\Microsoft\Command Processor\AutoRun`, after any value that was
+already there.
 
-```bat
-crower init cmd > "%USERPROFILE%\crower.doskey"
-doskey /macrofile="%USERPROFILE%\crower.doskey"
-```
-
-To load it in every cmd window, set the `AutoRun` value of
-`HKCU\Software\Microsoft\Command Processor` to the `doskey` line. cmd does not
-re-sync: run the first line again after adding commands.
-
-When a command only changes folder or runs `--here`, the file also defines `cr`
-and `crower` macros, so `cr desk` acts in the window too; every other `cr …` line is passed to
-the program unchanged. A first or second word that contains a double quote
+The file defines `cr` and `crower` macros: `cr desk` changes folder or runs
+`--here` in the window, every other `cr …` line goes to the program, and then the
+macro reloads the file — crower rewrites it after `create`, `update`, `delete`
+and the other changes, so a new command works in the same window. A first or second word that contains a double quote
 (`cr "my cmd"`) confuses cmd's `if`; use the bare name there.
 
 ## 🧪 Check it
@@ -96,6 +118,7 @@ crower init zsh | head   # see exactly what the hook defines
 | --- | --- |
 | `deploy: command not found` right after `create` in a script | Aliases apply to lines read *after* they are defined; in an interactive shell the next prompt has it. |
 | `echo y \| crower delete x` keeps the alias (bash) | A function at the end of a pipe runs in a subshell; run it without the pipe. zsh is unaffected. |
+| crower says "only the shell hook can do" | This window has no hook: it predates the setup (open a new one), or the shell was never set up (`crower init --apply`). |
 | A `cd` command runs but the folder does not change | The hook is not loaded (`type cr` should say it is a function; in cmd, `doskey /macros` should list `cr=`), the terminal predates the command's change (`exec $SHELL`), or the line is not a plain `cd <absolute folder>` — see "Jumps folders" above. The program on its own can never move your terminal. |
 | `not an in-shell command …` from a name | The command lost `--here` in another terminal or through a pipe, and this shell's hook is stale. Open a new terminal. |
 | A command is not defined | Its name is already taken in the shell — `type <name>` shows by what. Use `cr <name>`. |

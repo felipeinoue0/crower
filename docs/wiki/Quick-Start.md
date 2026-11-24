@@ -9,7 +9,7 @@
 ## 0️⃣ Hook it into your shell
 
 ```bash
-crower init --apply             # PATH, native aliases, tab completion
+crower init --apply             # only if the installer or the first-run question did not
 crower import --from-shell      # optional: bring the aliases you already have
 ```
 

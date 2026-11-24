@@ -564,7 +564,8 @@ crower init [bash|zsh|fish|powershell|cmd] [flags]
 
 ```bash
 crower init                 # show what your shell needs
-crower init --apply         # write it into the startup file
+crower init --apply         # set up the shell you run it from
+crower init --all           # set up every shell on this computer
 eval "$(crower init zsh)"   # the hook itself, for a startup file
 ```
 

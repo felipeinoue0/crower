@@ -165,11 +165,27 @@ a
 				t.Fatalf("%s: %v\n%s", shell, err, out)
 			}
 
+			// Compare the tail: PowerShell prints the long temp path where
+			// the test may hold its 8.3 short name.
+			tail := strings.ToLower(filepath.Join(filepath.Base(home), "Desk top"))
 			got := strings.ToLower(strings.ReplaceAll(string(out), "\r\n", "\n"))
-			for _, want := range []string{"cr-a=" + strings.ToLower(target) + "\n", "bare=" + strings.ToLower(target) + "\n", "hook=powershell\n"} {
-				if !strings.Contains(got, want) {
-					t.Errorf("output lacks %q:\n%s", want, out)
+
+			for _, key := range []string{"cr-a=", "bare="} {
+				found := false
+
+				for _, line := range strings.Split(got, "\n") {
+					if strings.HasPrefix(line, key) && strings.HasSuffix(line, tail) {
+						found = true
+					}
 				}
+
+				if !found {
+					t.Errorf("no %s…%s line:\n%s", key, tail, out)
+				}
+			}
+
+			if !strings.Contains(got, "hook=powershell\n") {
+				t.Errorf("the hook did not mark the session:\n%s", out)
 			}
 		})
 	}

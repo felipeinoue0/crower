@@ -214,9 +214,9 @@ func TestChangeDirPerShell(t *testing.T) {
 			"Set-Location -LiteralPath (Join-Path $HOME 'projects')",
 		}},
 		{"cmd", []string{
-			`desk=cr execute desk -- && cd /d "/mnt/c/Users/Felipe/Desktop"` + "\n",
-			`win=cr execute win -- && cd /d "C:\Users\o'brien\Desk top"` + "\n",
-			`home=cr execute home -- && cd /d "%USERPROFILE%\projects"` + "\n",
+			`desk=call cr execute desk -- && cd /d "/mnt/c/Users/Felipe/Desktop"` + "\n",
+			`win=call cr execute win -- && cd /d "C:\Users\o'brien\Desk top"` + "\n",
+			`home=call cr execute home -- && cd /d "%USERPROFILE%\projects"` + "\n",
 			"deploy=cr execute deploy -- $*\n",
 		}},
 	}
@@ -405,7 +405,7 @@ func TestWrapperPerShell(t *testing.T) {
 			"[System.Collections.Hashtable]::new([System.StringComparer]::Ordinal)",
 		}},
 		{"cmd", []string{
-			`crower=if "$1 $2"=="execute a" (cr execute a -- && cd /d "C:\Users\Felipe\Desktop\build") else if "$1"=="a" (cr execute a -- && cd /d "C:\Users\Felipe\Desktop\build") else if "$1 $2"=="execute list" (cr execute list -- && cd /d "/srv") else crower $*` + "\n",
+			`crower=if "$1 $2"=="execute a" (call cr execute a -- && cd /d "C:\Users\Felipe\Desktop\build") else if "$1"=="a" (call cr execute a -- && cd /d "C:\Users\Felipe\Desktop\build") else if "$1 $2"=="execute list" (call cr execute list -- && cd /d "/srv") else crower $*` + "\n",
 			`cr=if "$1 $2"=="execute a" (`,
 			"else cr $*\n",
 			"deploy=cr execute deploy -- $*\n",
@@ -496,14 +496,30 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 	}
 
 	got := strings.ReplaceAll(string(out), "\r\n", "\n")
-	for _, want := range []string{
-		"bare=" + target + "\n",
-		"cr-a=" + target + "\n",
-		"exec-a=" + target + "\n",
-		"ran: list", "list=" + start + "\n",
+	if !strings.Contains(got, "ran: list") {
+		t.Errorf("cr list did not reach the program:\n%s", got)
+	}
+
+	for _, want := range []struct{ key, dir string }{
+		{"bare", target}, {"cr-a", target}, {"exec-a", target}, {"list", start},
 	} {
-		if !strings.Contains(got, want) {
-			t.Errorf("output lacks %q:\n%s", want, got)
+		if !endsInDir(got, want.key, want.dir) {
+			t.Errorf("%s did not end in %q:\n%s", want.key, want.dir, got)
 		}
 	}
+}
+
+// endsInDir reports whether out has a "key=<path>" line naming dir. Only the
+// last two path elements are compared, case-insensitively: Windows may print
+// the temp folder by its long name where the test holds its 8.3 short name.
+func endsInDir(out, key, dir string) bool {
+	tail := strings.ToLower(filepath.Join(filepath.Base(filepath.Dir(dir)), filepath.Base(dir)))
+
+	for _, line := range strings.Split(out, "\n") {
+		if value, ok := strings.CutPrefix(line, key+"="); ok && strings.HasSuffix(strings.ToLower(value), tail) {
+			return true
+		}
+	}
+
+	return false
 }

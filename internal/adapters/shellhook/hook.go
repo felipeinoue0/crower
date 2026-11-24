@@ -176,7 +176,9 @@ func writeCmdWrappers(b *strings.Builder, names []string, opts Options) {
 		var chain []string
 
 		for _, name := range dirs {
-			jump := fmt.Sprintf("(%s execute %s -- && cd /d %s)", opts.Bin, name, cmdPath(opts.Dirs[name]))
+			// call: a batch-file crower (a shim) would otherwise never
+			// return to the cd.
+			jump := fmt.Sprintf("(call %s execute %s -- && cd /d %s)", opts.Bin, name, cmdPath(opts.Dirs[name]))
 			chain = append(chain, fmt.Sprintf(`if "$1 $2"=="execute %s" %s`, name, jump))
 
 			if !slices.Contains(reserved, name) {
@@ -201,7 +203,7 @@ func writeChangeDir(b *strings.Builder, shell, name, dir string, opts Options) e
 	case "powershell":
 		fmt.Fprintf(b, "$global:__crower_dirs['%[1]s'] = %[2]s\nif (-not (Get-Command '%[1]s' -ErrorAction SilentlyContinue)) { function global:%[1]s { & $global:__crower_exe execute '%[1]s' '--'; if ($LASTEXITCODE -eq 0) { Set-Location -LiteralPath %[2]s } }; $global:__crower_names += '%[1]s' }\n", name, psPath(dir))
 	case "cmd":
-		fmt.Fprintf(b, "%[1]s=%[2]s execute %[1]s -- && cd /d %[3]s\n", name, opts.Bin, cmdPath(dir))
+		fmt.Fprintf(b, "%[1]s=call %[2]s execute %[1]s -- && cd /d %[3]s\n", name, opts.Bin, cmdPath(dir))
 	default:
 		return fmt.Errorf("unsupported shell %q (supported: %s)", shell, strings.Join(Shells, ", "))
 	}

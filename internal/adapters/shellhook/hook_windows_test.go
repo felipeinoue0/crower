@@ -104,7 +104,7 @@ func TestCmdMacrosRunInCmd(t *testing.T) {
 			}
 
 			lines := strings.Split(strings.TrimSpace(strings.ReplaceAll(string(out), "\r\n", "\n")), "\n")
-			if got := lines[len(lines)-1]; !strings.EqualFold(got, tt.wantDir) {
+			if got := lines[len(lines)-1]; !endsInDir("cwd="+got, "cwd", tt.wantDir) {
 				t.Errorf("ended in %q, want %q\n%s", got, tt.wantDir, out)
 			}
 

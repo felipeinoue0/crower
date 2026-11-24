@@ -93,7 +93,7 @@ jobs:
       # Setting up cmd and Windows PowerShell for real: the profile query, and
       # AutoRun (restored after the test).
       - name: Test the shell setup on Windows
-        run: go test ./cmd -run 'TestPowerShellProfileQuery|TestInstallHookCmd' -v
+        run: go test ./cmd -run 'TestPowerShellProfileQuery|TestInstallHookCmd|TestBuiltHookInPowerShell' -v
 
       - name: Build
         run: go build ./...

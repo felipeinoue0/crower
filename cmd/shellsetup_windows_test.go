@@ -110,3 +110,67 @@ func TestInstallHookCmd(t *testing.T) {
 		}
 	}
 }
+
+// The real thing in both PowerShells: a built crower.exe prints its full hook
+// (completion included), the shell loads it the way the profile line does,
+// and `cr a` and `a` move the session into the folder.
+func TestBuiltHookInPowerShell(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds the binary")
+	}
+
+	home := t.TempDir()
+	bin := filepath.Join(home, "bin")
+	target := filepath.Join(home, "Desk top")
+
+	for _, dir := range []string{bin, target} {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	build := osexec.Command("go", "build", "-ldflags", "-X github.com/felipeinoue0/crower/cmd.Version=test", "-o", filepath.Join(bin, "crower.exe"), "..")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("go build: %v\n%s", err, out)
+	}
+
+	env := append(os.Environ(), "USERPROFILE="+home, "HOME="+home, "CROWER_NO_SETUP=1", "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	create := osexec.Command(filepath.Join(bin, "crower.exe"), "create", "a", `cd "`+target+`"`)
+	create.Env = env
+	if out, err := create.CombinedOutput(); err != nil {
+		t.Fatalf("create: %v\n%s", err, out)
+	}
+
+	script := `crower init powershell | Out-String | Invoke-Expression
+Set-Location C:\
+cr a
+"cr-a=$((Get-Location).Path)"
+Set-Location C:\
+a
+"bare=$((Get-Location).Path)"
+"hook=$env:CROWER_HOOK"`
+
+	for _, shell := range []string{"powershell", "pwsh"} {
+		t.Run(shell, func(t *testing.T) {
+			if _, err := osexec.LookPath(shell); err != nil {
+				t.Skipf("%s not installed", shell)
+			}
+
+			ps := powershell(shell, script)
+			ps.Env = append(ps.Env, "USERPROFILE="+home, "HOME="+home, "CROWER_NO_SETUP=1", "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			out, err := ps.CombinedOutput()
+			if err != nil {
+				t.Fatalf("%s: %v\n%s", shell, err, out)
+			}
+
+			got := strings.ToLower(strings.ReplaceAll(string(out), "\r\n", "\n"))
+			for _, want := range []string{"cr-a=" + strings.ToLower(target) + "\n", "bare=" + strings.ToLower(target) + "\n", "hook=powershell\n"} {
+				if !strings.Contains(got, want) {
+					t.Errorf("output lacks %q:\n%s", want, out)
+				}
+			}
+		})
+	}
+}

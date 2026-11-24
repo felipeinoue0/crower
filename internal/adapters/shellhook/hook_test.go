@@ -141,3 +141,165 @@ func TestBashAliasesForwardAndNeverShadow(t *testing.T) {
 		t.Errorf("the builtin echo was shadowed:\n%s", got)
 	}
 }
+
+func TestChangeDir(t *testing.T) {
+	tests := []struct {
+		line string
+		want string
+		ok   bool
+	}{
+		{"cd /mnt/c/Users/Felipe/Desktop", "/mnt/c/Users/Felipe/Desktop", true},
+		{"  cd   /srv/app  ", "/srv/app", true},
+		{"cd '/mnt/c/My Folder'", "/mnt/c/My Folder", true},
+		{`cd "C:\Users\Felipe\Desktop"`, `C:\Users\Felipe\Desktop`, true},
+		{`cd /d D:\work`, `D:\work`, true},
+		{`CD /D "D:\my work"`, `D:\my work`, true},
+		{`chdir C:/tools`, `C:/tools`, true},
+		{`cd \\server\share`, `\\server\share`, true},
+		{"cd ~", "~", true},
+		{"cd ~/projects", "~/projects", true},
+		{"cd", "", false},
+		{"cd ..", "", false},
+		{"cd src", "", false},
+		{"cd ~bob", "", false},
+		{"cd /a b", "", false},
+		{"cd /app && git pull", "", false},
+		{"cd /app; ls", "", false},
+		{"cd $HOME/x", "", false},
+		{"cd %USERPROFILE%", "", false},
+		{"cd {}", "", false},
+		{"cd /tmp/*", "", false},
+		{"cd '/it'\"s'", "", false},
+		{"cdx /tmp", "", false},
+		{"ls /tmp", "", false},
+		{"Set-Location C:\\x", "", false},
+	}
+
+	for _, tt := range tests {
+		got, ok := ChangeDir(tt.line)
+		if ok != tt.ok || got != tt.want {
+			t.Errorf("ChangeDir(%q) = %q, %v; want %q, %v", tt.line, got, ok, tt.want, tt.ok)
+		}
+	}
+}
+
+func TestChangeDirPerShell(t *testing.T) {
+	opts := Options{Bin: "cr", Dirs: map[string]string{
+		"desk": "/mnt/c/Users/Felipe/Desktop",
+		"win":  `C:\Users\o'brien\Desk top`,
+		"home": "~/projects",
+	}}
+	names := []string{"desk", "win", "home", "deploy"}
+
+	tests := []struct {
+		shell string
+		want  []string
+	}{
+		{"bash", []string{
+			`__crower_cdef desk ''\''/mnt/c/Users/Felipe/Desktop'\'''` + "\n",
+			`__crower_cdef home '~/'\''projects'\'''` + "\n",
+			"__crower_def deploy\n",
+			`command cr execute "$1" -- && builtin cd -- "$2"`,
+		}},
+		{"fish", []string{
+			"command cr execute desk --; and cd '/mnt/c/Users/Felipe/Desktop'",
+			`command cr execute win --; and cd 'C:\\Users\\o\'brien\\Desk top'`,
+			"command cr execute home --; and cd ~/'projects'",
+			"command cr execute deploy -- $argv",
+		}},
+		{"powershell", []string{
+			"if ($LASTEXITCODE -eq 0) { Set-Location -LiteralPath '/mnt/c/Users/Felipe/Desktop' }",
+			`Set-Location -LiteralPath 'C:\Users\o''brien\Desk top'`,
+			"Set-Location -LiteralPath (Join-Path $HOME 'projects')",
+		}},
+		{"cmd", []string{
+			`desk=cr execute desk -- && cd /d "/mnt/c/Users/Felipe/Desktop"` + "\n",
+			`win=cr execute win -- && cd /d "C:\Users\o'brien\Desk top"` + "\n",
+			`home=cr execute home -- && cd /d "%USERPROFILE%\projects"` + "\n",
+			"deploy=cr execute deploy -- $*\n",
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.shell, func(t *testing.T) {
+			script, err := Script(tt.shell, names, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, want := range tt.want {
+				if !strings.Contains(script, want) {
+					t.Errorf("script lacks %q:\n%s", want, script)
+				}
+			}
+		})
+	}
+}
+
+// End to end in bash and zsh: a cd command moves the calling shell, only after
+// crower succeeds, and never shadows a name the shell already knows.
+func TestPosixChangeDirMovesTheShell(t *testing.T) {
+	for _, shell := range []string{"bash", "zsh"} {
+		t.Run(shell, func(t *testing.T) {
+			path, err := exec.LookPath(shell)
+			if err != nil {
+				t.Skipf("%s not installed", shell)
+			}
+
+			bin := t.TempDir()
+			target := filepath.Join(t.TempDir(), "it's a folder")
+			if err := os.Mkdir(target, 0o755); err != nil {
+				t.Fatal(err)
+			}
+
+			// The fake crower fails for "broken", as a missing folder would.
+			fake := "#!/bin/sh\necho \"ran: $*\" >&2\n[ \"$2\" = broken ] && exit 1\nexit 0\n"
+			if err := os.WriteFile(filepath.Join(bin, "crower"), []byte(fake), 0o755); err != nil {
+				t.Fatal(err)
+			}
+
+			opts := Options{Bin: "crower", Dirs: map[string]string{"go2": target, "broken": target, "home2": "~"}}
+			script, err := Script(shell, []string{"go2", "broken", "home2"}, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			start := t.TempDir()
+			body := script + "\ncd " + posixQuote(start) + "\nbroken\necho \"after-broken=$PWD\"\ngo2 extra args\necho \"after-go=$PWD\"\nhome2\necho \"after-home=$PWD\"\n"
+			if shell == "bash" {
+				body = "shopt -s expand_aliases\n" + body
+			}
+
+			file := filepath.Join(t.TempDir(), "run")
+			if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			home := t.TempDir()
+			args := []string{"--norc", file}
+			if shell == "zsh" {
+				args = []string{"-f", file}
+			}
+
+			cmd := exec.Command(path, args...)
+			cmd.Env = append(os.Environ(), "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"), "HOME="+home)
+
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("%s: %v\n%s", shell, err, out)
+			}
+
+			got := string(out)
+			for _, want := range []string{
+				"ran: execute go2 --\n",
+				"after-broken=" + start + "\n",
+				"after-go=" + target + "\n",
+				"after-home=" + home + "\n",
+			} {
+				if !strings.Contains(got, want) {
+					t.Errorf("output lacks %q:\n%s", want, got)
+				}
+			}
+		})
+	}
+}

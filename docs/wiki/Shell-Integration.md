@@ -27,6 +27,15 @@ without crower installed still starts cleanly.
 - ➕ **One alias per name and alias.** `crower create greet "echo hi" -a hi`
   gives you `greet` and `hi`. Arguments pass through untouched —
   `greet -x 'two words'` runs `crower execute greet -- -x 'two words'`.
+- 📂 **Jumps folders.** A command that is only `cd <folder>` moves the
+  terminal you typed it in — `crower create desk "cd /mnt/c/Users/me/Desktop"`
+  then `desk`. A cd run by `crower execute` happens in a child process and is
+  lost, so for these the hook runs crower first (the run is still counted, and
+  a missing folder stops the jump) and then changes folder in your shell:
+  `cd` in bash, zsh and fish, `Set-Location` in PowerShell, `cd /d` in cmd.
+  The folder must be absolute or start with `~`, written as one word (quote it
+  if it has spaces); `cd /d` and `chdir` are accepted. A line with anything
+  more — `cd /app && git pull`, `cd $DIR`, `cd src` — runs as before.
 - 🛡️ **Never shadows.** If the shell already knows the name — a program on
   `PATH`, a builtin or keyword, your own alias or function — crower skips it.
   A command named `ls` or `git` stays reachable as `cr ls`.
@@ -69,6 +78,7 @@ crower init zsh | head   # see exactly what the hook defines
 | --- | --- |
 | `deploy: command not found` right after `create` in a script | Aliases apply to lines read *after* they are defined; in an interactive shell the next prompt has it. |
 | `echo y \| crower delete x` keeps the alias (bash) | A function at the end of a pipe runs in a subshell; run it without the pipe. zsh is unaffected. |
+| A `cd` command runs but the folder does not change | The hook is not loaded (`type <name>` shows nothing from crower), or the line is not a plain `cd <absolute folder>` — see "Jumps folders" above. `crower execute` alone can never move your terminal. |
 | A command is not defined | Its name is already taken in the shell — `type <name>` shows by what. Use `cr <name>`. |
 | zsh: no completion | `compinit` must run before the hook line. |
 

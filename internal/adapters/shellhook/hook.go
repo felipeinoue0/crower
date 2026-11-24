@@ -59,6 +59,10 @@ type Options struct {
 	// Completion is the shell's completion script, embedded so the hook costs
 	// one process at startup, not two.
 	Completion string
+	// Dirs maps a name to the folder its command only changes into (see
+	// ChangeDir). Such a name is defined to move the shell itself, because a
+	// cd run by `crower execute` happens in a child process and is lost.
+	Dirs map[string]string
 }
 
 // Script is the full hook for shell: the wrapper, the sync function, the
@@ -92,6 +96,14 @@ func Aliases(shell string, names []string, opts Options) (string, error) {
 	var b strings.Builder
 
 	for _, name := range Usable(names) {
+		if dir, ok := opts.Dirs[name]; ok {
+			if err := writeChangeDir(&b, shell, name, dir, opts); err != nil {
+				return "", err
+			}
+
+			continue
+		}
+
 		switch shell {
 		case "bash", "zsh":
 			fmt.Fprintf(&b, "__crower_def %s\n", name)
@@ -107,6 +119,27 @@ func Aliases(shell string, names []string, opts Options) (string, error) {
 	}
 
 	return b.String(), nil
+}
+
+// writeChangeDir defines name to run its command through crower -- which
+// records the run and fails on a missing folder -- and then, only on success,
+// to change the calling shell's directory. Arguments are not forwarded: a cd
+// command takes none.
+func writeChangeDir(b *strings.Builder, shell, name, dir string, opts Options) error {
+	switch shell {
+	case "bash", "zsh":
+		fmt.Fprintf(b, "__crower_cdef %s %s\n", name, posixQuote(posixWord(dir)))
+	case "fish":
+		fmt.Fprintf(b, "if not type -q %[1]s\n    function %[1]s --description 'crower command'\n        command %[2]s execute %[1]s --; and cd %[3]s\n    end\n    set -ga __crower_names %[1]s\nend\n", name, opts.Bin, fishWord(dir))
+	case "powershell":
+		fmt.Fprintf(b, "if (-not (Get-Command '%[1]s' -ErrorAction SilentlyContinue)) { function global:%[1]s { & $global:__crower_exe execute '%[1]s' '--'; if ($LASTEXITCODE -eq 0) { Set-Location -LiteralPath %[2]s } }; $global:__crower_names += '%[1]s' }\n", name, psPath(dir))
+	case "cmd":
+		fmt.Fprintf(b, "%[1]s=%[2]s execute %[1]s -- && cd /d %[3]s\n", name, opts.Bin, cmdPath(dir))
+	default:
+		return fmt.Errorf("unsupported shell %q (supported: %s)", shell, strings.Join(Shells, ", "))
+	}
+
+	return nil
 }
 
 func posixScript(shell string, names []string, opts Options) string {
@@ -129,6 +162,17 @@ __crower_def() {
     alias "$1=command %[2]s execute $1 --"
     __crower_names="${__crower_names-} $1"
   fi
+}
+
+__crower_cdef() {
+  if ! type "$1" >/dev/null 2>&1; then
+    alias "$1=__crower_cd $1 $2"
+    __crower_names="${__crower_names-} $1"
+  fi
+}
+
+__crower_cd() {
+  command %[2]s execute "$1" -- && builtin cd -- "$2"
 }
 
 __crower_sync() {

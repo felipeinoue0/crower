@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/fiwon123/crower/internal/domain/catalog"
 )
 
 func TestShellName(t *testing.T) {
@@ -193,4 +195,25 @@ func complete(t *testing.T, cfg string, args ...string) (string, error) {
 	_, _, err := runWith(t, cfg, "", append([]string{"__complete"}, args...)...)
 
 	return buf.String(), err
+}
+
+func TestChangeDirs(t *testing.T) {
+	commands := catalog.New(nil, []catalog.Command{
+		{Name: "desk", Aliases: []string{"d"}, Exec: "cd /mnt/c/Users/me/Desktop"},
+		{Name: "deploy", Exec: "cd /app && git pull"},
+		{Name: "steps", Exec: "cd /tmp", Steps: []string{"cd /tmp", "ls"}},
+	})
+
+	got := changeDirs(commands)
+	want := map[string]string{"desk": "/mnt/c/Users/me/Desktop", "d": "/mnt/c/Users/me/Desktop"}
+
+	if len(got) != len(want) {
+		t.Fatalf("changeDirs = %v, want %v", got, want)
+	}
+
+	for name, dir := range want {
+		if got[name] != dir {
+			t.Errorf("changeDirs[%q] = %q, want %q", name, got[name], dir)
+		}
+	}
 }

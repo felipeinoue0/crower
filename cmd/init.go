@@ -121,6 +121,7 @@ func printHook(cmd *cobra.Command, shell string) error {
 	var names []string
 	if cfg, err := newSession(cmd); err == nil {
 		names = commandWords(cfg.Catalog())
+		opts.Dirs = changeDirs(cfg.Catalog())
 	} else {
 		fmt.Fprintln(streams.Err, "crower: no command aliases loaded:", err)
 	}
@@ -169,6 +170,31 @@ func commandWords(commands catalog.Catalog) []string {
 	}
 
 	return words
+}
+
+// changeDirs maps every name and alias of a command that only changes folder
+// to that folder, so the hook can move the shell instead of a child process.
+// A Steps command is never one: its exec line is not what runs.
+func changeDirs(commands catalog.Catalog) map[string]string {
+	dirs := map[string]string{}
+
+	for _, command := range commands.Commands() {
+		if len(command.Steps) > 0 {
+			continue
+		}
+
+		dir, ok := shellhook.ChangeDir(command.Exec)
+		if !ok {
+			continue
+		}
+
+		dirs[command.Name] = dir
+		for _, alias := range command.Aliases {
+			dirs[alias] = dir
+		}
+	}
+
+	return dirs
 }
 
 // invokedAs is the program name the user typed, "crower" or "cr", so the hook

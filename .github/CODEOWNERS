@@ -11,10 +11,10 @@
 # Last matching pattern wins, so put broad rules first and specific ones last.
 
 # Default: everything requires a review.
-* @fiwon123
+* @felipeinoue0
 
 # The workflow itself: a change here affects every future change.
-/.github/workflows/**   @fiwon123
-/.opencode/**           @fiwon123
-/scripts/**             @fiwon123
-/Makefile               @fiwon123
+/.github/workflows/**   @felipeinoue0
+/.opencode/**           @felipeinoue0
+/scripts/**             @felipeinoue0
+/Makefile               @felipeinoue0

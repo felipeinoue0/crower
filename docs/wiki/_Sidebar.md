@@ -42,7 +42,7 @@
 ---
 
 <sub>
-<a href="https://github.com/fiwon123/crower/releases">⬇️ Releases</a> ·
-<a href="https://github.com/fiwon123/crower/issues">🐛 Issues</a> ·
-<a href="https://github.com/users/fiwon123/projects/5">🎯 Roadmap</a>
+<a href="https://github.com/felipeinoue0/crower/releases">⬇️ Releases</a> ·
+<a href="https://github.com/felipeinoue0/crower/issues">🐛 Issues</a> ·
+<a href="https://github.com/users/felipeinoue0/projects/5">🎯 Roadmap</a>
 </sub>

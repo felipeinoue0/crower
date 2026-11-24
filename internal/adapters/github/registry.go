@@ -15,7 +15,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-const defaultRegistryURL = "https://raw.githubusercontent.com/fiwon123/crower-resources/main"
+const defaultRegistryURL = "https://raw.githubusercontent.com/felipeinoue0/crower-resources/main"
 
 // Registry reads the shared command registry.
 type Registry struct {

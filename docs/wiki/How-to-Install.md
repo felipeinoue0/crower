@@ -8,7 +8,7 @@
 
 ## ⬇️ Download a release (recommended)
 
-Grab the latest archive from **[Releases](https://github.com/fiwon123/crower/releases)**.
+Grab the latest archive from **[Releases](https://github.com/felipeinoue0/crower/releases)**.
 Archives are named `crower_<version>_<os>_<arch>`. Every one contains the same
 three executables — `crower`, `cr` and `crower-gui` — with no architecture
 suffix.
@@ -27,7 +27,7 @@ window; it needs a graphical session.
 
 ```bash
 VERSION=v0.5.2   # replace with the tag you are installing
-curl -LO "https://github.com/fiwon123/crower/releases/download/$VERSION/crower_${VERSION}_linux_amd64.tar.gz"
+curl -LO "https://github.com/felipeinoue0/crower/releases/download/$VERSION/crower_${VERSION}_linux_amd64.tar.gz"
 tar -xzf "crower_${VERSION}_linux_amd64.tar.gz"
 chmod +x crower cr crower-gui
 sudo mv crower cr crower-gui /usr/local/bin/
@@ -59,7 +59,7 @@ crower --version
 ## 🧪 Build from source
 
 ```bash
-git clone https://github.com/fiwon123/crower.git
+git clone https://github.com/felipeinoue0/crower.git
 cd crower
 go build -o crower .
 ./crower --help
@@ -75,7 +75,7 @@ Go **1.25.4** is pinned in `go.mod`; the dev sandbox and CI use the same version
 ## 🐳 Try it without installing
 
 ```bash
-git clone https://github.com/fiwon123/crower.git
+git clone https://github.com/felipeinoue0/crower.git
 cd crower
 docker compose run --rm dev crower --help
 ```

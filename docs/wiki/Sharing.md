@@ -63,7 +63,7 @@ crower share pull docker-setup    # install one
 
 A registry is any HTTP server serving a manifest (`index.json`) plus
 `packs/<name>.toml` — see
-[crower-resources](https://github.com/fiwon123/crower-resources) for examples.
+[crower-resources](https://github.com/felipeinoue0/crower-resources) for examples.
 
 ## 🔒 Before you share
 

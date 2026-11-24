@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fiwon123/crower/internal/adapters/update"
-	"github.com/fiwon123/crower/internal/application/checkrelease"
-	"github.com/fiwon123/crower/internal/application/executecommand"
-	"github.com/fiwon123/crower/internal/application/upgradeapp"
+	"github.com/felipeinoue0/crower/internal/adapters/update"
+	"github.com/felipeinoue0/crower/internal/application/checkrelease"
+	"github.com/felipeinoue0/crower/internal/application/executecommand"
+	"github.com/felipeinoue0/crower/internal/application/upgradeapp"
 
 	"github.com/spf13/cobra"
 )
@@ -29,7 +29,7 @@ var createFlag bool
 var updateFlag bool
 var processFlag bool
 
-// Version is set at build time with -X github.com/fiwon123/crower/cmd.Version.
+// Version is set at build time with -X github.com/felipeinoue0/crower/cmd.Version.
 var Version = "vx.x.x"
 
 // rootCmd represents the base command when called without any subcommands.

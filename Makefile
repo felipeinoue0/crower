@@ -5,7 +5,7 @@ GUI_PACKAGE = $(BUILD_DIR)/gui-package
 BUILD_DIR := build
 SCRIPTS_DIR := scripts
 SCRIPT_NAME := add_to_path
-INJECT_VERSION:= github.com/fiwon123/crower/cmd.Version
+INJECT_VERSION:= github.com/felipeinoue0/crower/cmd.Version
 
 # The Fyne window is a GUI-subsystem program on Windows. Without -H windowsgui
 # the loader gives it a console window, so double-clicking the executable opens

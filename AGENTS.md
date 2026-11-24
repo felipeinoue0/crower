@@ -230,7 +230,7 @@ about the sandbox made from inside it cannot be about the host's Docker.
 - **Testing**: `go test` — standard library only, no assertion framework
 - **CI**: GitHub Actions runs gofmt, vet, test, and build on `dev` → `main` pull requests only — never on a feature-branch pull request
 - **Local testing**: run `make check` before pushing a feature branch. CI is not the gate for feature work; the local gate is.
-- **Version**: the binary reports the tag it was built from, injected with `-X` into `github.com/fiwon123/crower/cmd.Version`. A build without that variable fails.
+- **Version**: the binary reports the tag it was built from, injected with `-X` into `github.com/felipeinoue0/crower/cmd.Version`. A build without that variable fails.
 
 ## Environment and Secret-File Rules
 

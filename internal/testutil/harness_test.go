@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/testutil"
+	"github.com/felipeinoue0/crower/internal/testutil"
 )
 
 func TestNewCreatesAnIsolatedInstallation(t *testing.T) {

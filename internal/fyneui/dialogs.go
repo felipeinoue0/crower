@@ -10,8 +10,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/fiwon123/crower/internal/desktop"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // The dialogs are deliberately larger than Fyne's default: a command's exec is

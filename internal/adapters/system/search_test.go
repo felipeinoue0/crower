@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
-	crowererrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	crowererrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 func TestBrowserCommand(t *testing.T) {

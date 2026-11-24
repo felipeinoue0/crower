@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // The adapter maps the process rows the host reports to the result's rows, so a

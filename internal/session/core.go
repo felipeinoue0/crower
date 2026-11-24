@@ -1,8 +1,8 @@
 package session
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
 )
 
 // Load reads the configuration at cfgFilePath and builds a run from it.

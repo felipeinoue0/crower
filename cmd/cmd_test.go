@@ -4,7 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"encoding/json"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/session"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

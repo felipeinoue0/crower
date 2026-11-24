@@ -7,9 +7,9 @@ import (
 
 	"github.com/mattn/go-runewidth"
 
-	"github.com/fiwon123/crower/internal/adapters/output"
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 var now = time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)

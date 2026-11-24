@@ -17,7 +17,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/fiwon123/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/desktop"
 )
 
 // newGrowingEntry builds a multi-line field that shows its text instead of

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/deletecommand"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/deletecommand"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // fakeState records what the use case asked it to store.

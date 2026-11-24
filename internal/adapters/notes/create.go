@@ -4,9 +4,9 @@ import (
 	"encoding/csv"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // aliasArg records the --alias flag, so the line can be replayed with the

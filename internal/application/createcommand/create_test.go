@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/createcommand"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/createcommand"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // recorder keeps the order of the effects a test cares about.

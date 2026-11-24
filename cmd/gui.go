@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/application/executecommand"
-	"github.com/fiwon123/crower/internal/session"
-	"github.com/fiwon123/crower/internal/tui"
+	"github.com/felipeinoue0/crower/internal/application/executecommand"
+	"github.com/felipeinoue0/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/tui"
 
 	"github.com/spf13/cobra"
 )

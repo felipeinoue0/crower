@@ -90,5 +90,5 @@ go version -m crower | grep vcs.revision
 
 ## 📝 Changelog
 
-[`vPREV...vX.Y.Z`](https://github.com/fiwon123/crower/compare/vPREV...vX.Y.Z) — one sentence on the main theme.
+[`vPREV...vX.Y.Z`](https://github.com/felipeinoue0/crower/compare/vPREV...vX.Y.Z) — one sentence on the main theme.
 ````

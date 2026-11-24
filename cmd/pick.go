@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/terminal"
-	"github.com/fiwon123/crower/internal/application/executecommand"
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/terminal"
+	"github.com/felipeinoue0/crower/internal/application/executecommand"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/session"
 
 	"github.com/spf13/cobra"
 )

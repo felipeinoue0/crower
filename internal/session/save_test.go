@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/domain/timeline"
-	crerrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
+	crerrors "github.com/felipeinoue0/crower/internal/errors"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 func newTestConfigAt(t *testing.T, cfgPath string) *Session {

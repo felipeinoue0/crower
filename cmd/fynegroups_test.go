@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
 )
 
 // The window's group icons are the file beside the configuration, so a reload

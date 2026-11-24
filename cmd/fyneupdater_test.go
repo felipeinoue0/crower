@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
 )
 
 // The window shows the version the binary was built from, not a guess from the

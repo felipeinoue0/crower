@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/errors"
 	"github.com/minio/selfupdate"
 )
 
-const defaultReleaseBase = "https://github.com/fiwon123/crower/releases/download"
+const defaultReleaseBase = "https://github.com/felipeinoue0/crower/releases/download"
 
 // The download and the extracted member are read into memory; the caps stop a
 // corrupt or hostile response from exhausting the machine.

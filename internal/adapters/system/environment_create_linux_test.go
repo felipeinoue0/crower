@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
 )
 
 func TestSetVariableAppendsTheExport(t *testing.T) {

@@ -14,8 +14,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // Pack is one entry of the registry index.

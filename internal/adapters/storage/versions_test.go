@@ -3,7 +3,7 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
 )
 
 func TestVersionsRecordAndPrevious(t *testing.T) {

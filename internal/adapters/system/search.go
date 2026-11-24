@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"runtime"
 
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // Search runs the platform's search and browser commands.

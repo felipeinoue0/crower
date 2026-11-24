@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
-	crowererrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	crowererrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 // The platform dispatch is tested through the pure command builders rather than

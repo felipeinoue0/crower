@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
 )
 
 func TestUpgradeNote(t *testing.T) {

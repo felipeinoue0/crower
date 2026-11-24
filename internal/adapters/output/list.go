@@ -8,7 +8,7 @@ import (
 
 	"github.com/mattn/go-runewidth"
 
-	"github.com/fiwon123/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
 )
 
 // ListStyle is how the command listing is drawn.

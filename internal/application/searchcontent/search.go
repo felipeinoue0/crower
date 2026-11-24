@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // Mode is what a request searches.

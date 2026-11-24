@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 func TestShellName(t *testing.T) {

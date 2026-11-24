@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // fyneGroups stores the icon a group shows in the window.

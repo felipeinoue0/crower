@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // pathFiles are the files the PATH export is added to. A login shell reads

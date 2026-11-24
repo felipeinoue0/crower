@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fiwon123/crower/internal/tools/winpe"
+	"github.com/felipeinoue0/crower/internal/tools/winpe"
 )
 
 // verifyPath checks a built executable against what its name promises: the

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/session"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // New returns a configuration whose state lives in a directory the test owns,

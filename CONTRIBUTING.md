@@ -5,7 +5,7 @@ kinds of help than patches — reading the list below is genuinely useful.
 
 ## Report an issue
 
-Open an [issue](https://github.com/fiwon123/crower/issues/new) with:
+Open an [issue](https://github.com/felipeinoue0/crower/issues/new) with:
 
 - **the version** — `crower --version`;
 - **the platform** — Linux, Windows, macOS, and the architecture (amd64/arm64);
@@ -20,7 +20,7 @@ desktop`) surfaces, and so is the text.
 ## Discuss
 
 - **Issues** are for bugs and concrete proposals.
-- **[Discussions](https://github.com/fiwon123/crower/discussions)** are for
+- **[Discussions](https://github.com/felipeinoue0/crower/discussions)** are for
   questions, ideas that are not yet a plan, and "would this be useful?".
 
 ## Help without writing code
@@ -28,7 +28,7 @@ desktop`) surfaces, and so is the text.
 Several claims in the release notes are **unproven**, because the machine that
 wrote the code has none of the hardware they need. The README's
 **[What is not proven](README.md#-what-is-not-proven)** section lists them, and
-the wiki's **[Verifying claims](https://github.com/fiwon123/crower/wiki/Verifying-claims)**
+the wiki's **[Verifying claims](https://github.com/felipeinoue0/crower/wiki/Verifying-claims)**
 page has the steps for each one and what to record.
 
 Running the program and reporting exactly what happened — including "it worked"

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // Archiver expands compressed archives with the platform's tools.

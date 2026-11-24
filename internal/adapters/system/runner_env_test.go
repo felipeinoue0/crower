@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/system"
-	crerrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	crerrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 // The command's environment reaches the child on top of the process one.

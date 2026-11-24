@@ -3,14 +3,14 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/fiwon123/crower/internal/adapters/github"
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/output"
-	"github.com/fiwon123/crower/internal/adapters/prompt"
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/github"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/adapters/prompt"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // sessionPorts adapts the session to the ports the use cases declare.

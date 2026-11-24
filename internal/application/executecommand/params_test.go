@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 func quoted(s string) string {

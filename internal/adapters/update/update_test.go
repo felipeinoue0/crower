@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	crowererrors "github.com/fiwon123/crower/internal/errors"
+	crowererrors "github.com/felipeinoue0/crower/internal/errors"
 	"github.com/minio/selfupdate"
 )
 

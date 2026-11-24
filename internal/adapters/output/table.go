@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // CommandsTable renders the managed command table, header included.

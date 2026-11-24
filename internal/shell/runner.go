@@ -12,7 +12,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/errors"
 )
 
 // Runner starts the platform's shell for a command line.

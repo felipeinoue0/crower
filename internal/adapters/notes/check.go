@@ -1,7 +1,7 @@
 package notes
 
 import (
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // Check renders the history note for `--check`.

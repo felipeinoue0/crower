@@ -3,6 +3,7 @@
 package cmd
 
 import (
+	"bytes"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/felipeinoue0/crower/internal/adapters/shellsetup"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // Windows PowerShell answers where its profile is; the path is the one it
@@ -50,9 +52,20 @@ func TestInstallHookCmd(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("USERPROFILE", home)
 
+	// Run outside any command, as the first-run offer does: the commands
+	// must load (cobra has not merged --config into the root yet).
+	errOut := &bytes.Buffer{}
+	previous := streams
+	streams = session.Streams{In: previous.In, Out: previous.Out, Err: errOut}
+	t.Cleanup(func() { streams = previous })
+
 	result, err := installHook(rootCmd, shellsetup.Cmd)
 	if err != nil {
 		t.Fatalf("installHook: %v", err)
+	}
+
+	if strings.Contains(errOut.String(), "no command aliases loaded") {
+		t.Errorf("the macro file was built without the commands:\n%s", errOut.String())
 	}
 
 	file := filepath.Join(home, "crower", "crower.doskey")
@@ -71,7 +84,7 @@ func TestInstallHookCmd(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !strings.HasPrefix(value, "set CROWER_TEST_MINE=1 & ") || !shellsetup.HasAutoRun(value, file) || !result.Changed {
+	if !strings.HasPrefix(value, "set CROWER_TEST_MINE=1& ") || !shellsetup.HasAutoRun(value, file) || !result.Changed {
 		t.Errorf("AutoRun = %q (changed %v), want the old value kept and the macro file added", value, result.Changed)
 	}
 

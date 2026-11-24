@@ -174,6 +174,11 @@ func printHook(cmd *cobra.Command, shell string) error {
 func buildHook(cmd *cobra.Command, shell string, aliasesOnly bool) (string, error) {
 	opts := shellhook.Options{Bin: invokedAs(), Reserved: subcommandWords(rootCmd)}
 
+	// Outside a run (first-run setup, the refresh after a change) cobra has
+	// not merged the global flags into this command yet, and newSession
+	// reads --config and --setup from them.
+	_ = cmd.LocalFlags()
+
 	// cmd's macros reload their file after every crower run, which is how a
 	// cmd window picks up a new command; only a file crower manages qualifies.
 	if shell == shellsetup.Cmd {

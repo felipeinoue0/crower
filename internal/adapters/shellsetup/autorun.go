@@ -35,5 +35,7 @@ func WithAutoRun(existing, macroFile string) (string, bool) {
 		return entry, true
 	}
 
-	return strings.TrimRight(existing, " ") + " & " + entry, true
+	// No space before "&": cmd keeps it, so `set X=1 & …` would turn the
+	// user's own X into "1 ".
+	return strings.TrimRight(existing, " ") + "& " + entry, true
 }

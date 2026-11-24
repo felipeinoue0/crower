@@ -88,11 +88,28 @@ func hookFile(shell string) (string, string, error) {
 	return file, line, nil
 }
 
+// powershell runs one command in the named PowerShell without a profile.
+//
+// PSModulePath is dropped: started from PowerShell 7, Windows PowerShell
+// would inherit 7's module path and fail to load its own modules
+// (Get-ExecutionPolicy among them). Each recomputes its default.
+func powershell(exe, command string) *osexec.Cmd {
+	c := osexec.Command(exe, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command)
+
+	for _, kv := range os.Environ() {
+		if !strings.HasPrefix(strings.ToUpper(kv), "PSMODULEPATH=") {
+			c.Env = append(c.Env, kv)
+		}
+	}
+
+	return c
+}
+
 // powershellProfile asks the PowerShell itself where its profile is. The path
 // differs between Windows PowerShell and PowerShell 7, and Documents may be
 // redirected (OneDrive), so guessing it misses real setups.
 func powershellProfile(exe string) (string, error) {
-	out, err := osexec.Command(exe, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "$PROFILE.CurrentUserCurrentHost").Output()
+	out, err := powershell(exe, "$PROFILE.CurrentUserCurrentHost").Output()
 	if err != nil {
 		return "", fmt.Errorf("ask %s for its profile: %w", exe, err)
 	}
@@ -107,7 +124,7 @@ func powershellProfile(exe string) (string, error) {
 
 // powershellPolicy is the execution policy in effect for the current user.
 func powershellPolicy(exe string) string {
-	out, err := osexec.Command(exe, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "Get-ExecutionPolicy").Output()
+	out, err := powershell(exe, "(Get-ExecutionPolicy).ToString()").Output()
 	if err != nil {
 		return ""
 	}
@@ -125,7 +142,7 @@ func policyBlocksProfile(policy string) bool {
 // written on this machine run, downloaded ones must be signed. It is the
 // default PowerShell 7 already uses on Windows.
 func allowProfileScripts(exe string) error {
-	return osexec.Command(exe, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force").Run()
+	return powershell(exe, "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force").Run()
 }
 
 const powershellHookLine = `if (Get-Command crower -ErrorAction SilentlyContinue) { crower init powershell | Out-String | Invoke-Expression }`

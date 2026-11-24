@@ -135,7 +135,13 @@ func Execute() {
 	// cmd cannot re-sync its macros the way the other hooks do, so crower
 	// rewrites the file they reload from.
 	if mutatingRun(args) {
-		refreshMacroFile(rootCmd)
+		// The command that ran has its flags parsed (--config, --setup).
+		ran, _, err := rootCmd.Find(args)
+		if err != nil {
+			ran = rootCmd
+		}
+
+		refreshMacroFile(ran)
 	}
 
 	maybeNotifyUpdate()

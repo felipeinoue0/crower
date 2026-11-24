@@ -95,3 +95,40 @@ func TestMacroFilePathIsUnderCrowerHome(t *testing.T) {
 		t.Errorf("macroFilePath = %q, want %q", file, want)
 	}
 }
+
+// cmd's macro file holds the user's commands, read from the default
+// configuration. (runWith has already executed the tree, so this cannot catch
+// unmerged flags; TestInstallHookCmd on Windows runs from a fresh root.)
+func TestWriteMacroFileHoldsTheCommands(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	t.Setenv("CROWER_SETUP", "")
+
+	cfg := filepath.Join(home, "crower", "crower.yaml")
+	if _, stderr, err := runWith(t, cfg, "", "create", "desk", `cd C:\Users\Ann\Desktop`); err != nil {
+		t.Fatalf("create: %v\n%s", err, stderr)
+	}
+
+	resetFlags()
+
+	file, err := writeMacroFile(rootCmd)
+	if err != nil {
+		t.Fatalf("writeMacroFile: %v", err)
+	}
+
+	body, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, want := range []string{
+		`desk=call `,
+		`cd /d "C:\Users\Ann\Desktop"`,
+		`doskey /macrofile="` + file + `"`,
+	} {
+		if !strings.Contains(string(body), want) {
+			t.Errorf("macro file lacks %q:\n%s", want, body)
+		}
+	}
+}

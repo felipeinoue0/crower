@@ -120,8 +120,9 @@ func TestWithAutoRun(t *testing.T) {
 	}{
 		{"", entry, true},
 		{"  ", entry, true},
-		{`@chcp 65001>nul`, `@chcp 65001>nul & ` + entry, true},
-		{`@chcp 65001>nul & ` + entry, `@chcp 65001>nul & ` + entry, false},
+		{`@chcp 65001>nul`, `@chcp 65001>nul& ` + entry, true},
+		{`set X=1 `, `set X=1& ` + entry, true},
+		{`@chcp 65001>nul& ` + entry, `@chcp 65001>nul& ` + entry, false},
 		{strings.ToUpper(entry), strings.ToUpper(entry), false},
 	}
 

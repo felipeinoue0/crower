@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/desktop"
 )
 
 // fyneWindow remembers the window's size in window.toml beside the

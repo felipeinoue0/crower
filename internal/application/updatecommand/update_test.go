@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/updatecommand"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/updatecommand"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 type commit struct {

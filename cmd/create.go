@@ -4,14 +4,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/system"
-	"github.com/fiwon123/crower/internal/application/createcommand"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/application/createcommand"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/session"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 	"github.com/spf13/cobra"
 )
 

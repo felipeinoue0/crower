@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/application/listcontent"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/application/listcontent"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 type fakeState struct {

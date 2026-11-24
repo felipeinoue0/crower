@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
 )
 
 // A missing file is "no group has an icon", not an error.

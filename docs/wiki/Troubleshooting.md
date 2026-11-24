@@ -114,7 +114,7 @@ certutil -hashfile crower_<version>_windows_amd64.zip SHA256
 
 ## Still stuck
 
-Open an [issue](https://github.com/fiwon123/crower/issues/new) with:
+Open an [issue](https://github.com/felipeinoue0/crower/issues/new) with:
 
 - `crower --version`
 - your OS and architecture

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/github"
-	crowererrors "github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/github"
+	crowererrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 // registryServer serves an index and one pack.

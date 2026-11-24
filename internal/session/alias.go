@@ -4,8 +4,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
-	"github.com/fiwon123/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
 )
 
 // catalogOf adapts the persisted command map to the domain aggregate.

@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/system"
-	"github.com/fiwon123/crower/internal/application/executecommand"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/application/executecommand"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/session"
 
 	"github.com/spf13/cobra"
 )

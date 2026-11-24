@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/github"
-	"github.com/fiwon123/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/github"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
 )
 
 const (

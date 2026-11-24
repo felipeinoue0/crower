@@ -10,7 +10,7 @@
 
 - **Project Name**: crower
 - **One-liner**: A cross-platform terminal file manager and command-alias manager that keeps an undoable history and per-item notes.
-- **GitHub repository**: https://github.com/fiwon123/crower
+- **GitHub repository**: https://github.com/felipeinoue0/crower
 
 ## Problem
 

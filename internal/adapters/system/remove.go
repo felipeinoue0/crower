@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/errors"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // Remover deletes files and folders with the platform's own tools.

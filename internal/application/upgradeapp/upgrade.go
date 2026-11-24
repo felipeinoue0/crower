@@ -8,7 +8,7 @@ package upgradeapp
 import (
 	"fmt"
 
-	"github.com/fiwon123/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
 )
 
 // Request is one update.

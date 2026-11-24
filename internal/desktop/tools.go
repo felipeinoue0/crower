@@ -3,7 +3,7 @@ package desktop
 import (
 	"context"
 
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // SearchMode is what the tools view looks at.

@@ -160,7 +160,7 @@ func TestReadmeGuardsCatchTheRegressions(t *testing.T) {
 		"chmod +x crower cr\n" +
 		"```\n" +
 		"```bash\n" +
-		"git clone https://github.com/fiwon123/crower.git\n" +
+		"git clone https://github.com/felipeinoue0/crower.git\n" +
 		"cd crower\n" +
 		"make build\n" +
 		"sudo make install  # or add build/ to PATH\n" +

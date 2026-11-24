@@ -2,7 +2,7 @@ package session
 
 import (
 	"bytes"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
 )
 
 // Ranging a Go map made the same config run a different command on different

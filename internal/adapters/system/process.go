@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/shell"
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/internal/shell"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // Processes turns a running process into the line that starts it again.

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	crerrors "github.com/fiwon123/crower/internal/errors"
+	crerrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 func TestCommandForPlatform(t *testing.T) {

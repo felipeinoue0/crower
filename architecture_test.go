@@ -24,7 +24,7 @@ import (
 	"testing"
 )
 
-const modulePath = "github.com/fiwon123/crower"
+const modulePath = "github.com/felipeinoue0/crower"
 
 // importRule describes what one ring may not import.
 type importRule struct {

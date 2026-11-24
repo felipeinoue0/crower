@@ -10,11 +10,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/desktop"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // historyUI lays out the window over a log and opens History.

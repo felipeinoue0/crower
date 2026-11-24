@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/desktop"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/desktop"
+	"github.com/felipeinoue0/crower/internal/session"
 )
 
 // defaultSetupName is what the original installation is called in the window.

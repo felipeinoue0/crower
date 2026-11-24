@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
-	"github.com/fiwon123/crower/internal/application/sharecommands"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/application/sharecommands"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/errors"
 	"github.com/pelletier/go-toml"
 )
 
-const defaultRegistryURL = "https://raw.githubusercontent.com/fiwon123/crower-resources/main"
+const defaultRegistryURL = "https://raw.githubusercontent.com/felipeinoue0/crower-resources/main"
 
 // Registry reads the shared command registry.
 type Registry struct {

@@ -9,7 +9,7 @@ package main
 import (
 	"os"
 
-	"github.com/fiwon123/crower/cmd"
+	"github.com/felipeinoue0/crower/cmd"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 )
 
 // LatestReleaseURL is the endpoint that names the newest published release.
-const LatestReleaseURL = "https://api.github.com/repos/fiwon123/crower/releases/latest"
+const LatestReleaseURL = "https://api.github.com/repos/felipeinoue0/crower/releases/latest"
 
 // LatestTag returns the tag of the newest published release.
 func LatestTag() (string, error) {

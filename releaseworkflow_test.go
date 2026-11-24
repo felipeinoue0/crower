@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/update"
+	"github.com/felipeinoue0/crower/internal/adapters/update"
 )
 
 // The release workflow names a runner label for every row of its build matrix.

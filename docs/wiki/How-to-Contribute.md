@@ -8,7 +8,7 @@
 
 ## 🐛 Report an issue
 
-Open an [issue](https://github.com/fiwon123/crower/issues/new) with:
+Open an [issue](https://github.com/felipeinoue0/crower/issues/new) with:
 
 - **the version** — `crower --version`
 - **the platform** — Linux, Windows, macOS, and the architecture
@@ -19,7 +19,7 @@ Open an [issue](https://github.com/fiwon123/crower/issues/new) with:
 ## 💬 Discuss
 
 - **Issues** are for bugs and concrete proposals.
-- **[Discussions](https://github.com/fiwon123/crower/discussions)** are for
+- **[Discussions](https://github.com/felipeinoue0/crower/discussions)** are for
   questions, half-formed ideas, and "would this be useful?".
 
 ## 🧪 Help without writing code
@@ -39,7 +39,7 @@ Documentation is the other gap: a wrong sentence here or in the README is a bug.
   which is the authoritative version.
 
 **`CONTRIBUTING.md`** in the repository is the authoritative version of this page;
-the **[README](https://github.com/fiwon123/crower)** has the user-facing docs.
+the **[README](https://github.com/felipeinoue0/crower)** has the user-facing docs.
 
 ## 🤖 About the AI
 

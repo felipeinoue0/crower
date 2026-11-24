@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // CommandFile is the TOML file that holds the managed commands.

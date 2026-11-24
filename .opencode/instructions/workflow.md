@@ -50,7 +50,7 @@ Every change must be traceable end-to-end:
 No orphaned branches, PRs, or issues. Every piece of work is linked.
 
 > **`Closes #N` closes the issue on a `dev` merge**, because `dev` is this
-> repository's *default* branch (`gh api repos/fiwon123/crower --jq .default_branch`).
+> repository's *default* branch (`gh api repos/felipeinoue0/crower --jq .default_branch`).
 > GitHub auto-closes a linked issue when the PR merges into the default branch, and
 > every feature PR targets `dev`. Step 6 closes the issue only as a fallback, for a
 > PR that omitted the clause. A `dev` → `main` release PR closes nothing, because

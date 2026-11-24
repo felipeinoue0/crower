@@ -12,9 +12,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/timeline"
-	"github.com/fiwon123/crower/internal/errors"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/errors"
 )
 
 // Prompt asks questions on one terminal.

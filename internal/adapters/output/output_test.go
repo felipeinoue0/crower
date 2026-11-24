@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/output"
+	"github.com/felipeinoue0/crower/internal/adapters/output"
 )
 
 // A result has to be exactly one line: `crower list --json | wc -l` is 1.

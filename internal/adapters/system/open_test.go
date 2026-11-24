@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	crowererrors "github.com/fiwon123/crower/internal/errors"
+	crowererrors "github.com/felipeinoue0/crower/internal/errors"
 )
 
 func TestOpenCommand(t *testing.T) {

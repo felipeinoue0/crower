@@ -12,9 +12,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/shell"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/shell"
 )
 
 // UpdateNote renders the history note for an update.

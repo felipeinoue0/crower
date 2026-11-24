@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# `go build` in the repository root writes the binary here (#568)
+/crower
+
 # Test binary, built with `go test -c`
 *.test
 

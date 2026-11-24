@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/system"
-	"github.com/fiwon123/crower/internal/application/opencontent"
-	"github.com/fiwon123/crower/internal/session"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/system"
+	"github.com/felipeinoue0/crower/internal/application/opencontent"
+	"github.com/felipeinoue0/crower/internal/session"
 
 	"github.com/spf13/cobra"
 )

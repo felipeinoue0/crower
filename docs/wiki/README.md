@@ -1,7 +1,7 @@
 # Wiki source
 
 These pages are the source of the GitHub wiki
-(`https://github.com/fiwon123/crower/wiki`). They live in the repository so a
+(`https://github.com/felipeinoue0/crower/wiki`). They live in the repository so a
 change to them is reviewed like any other, and so the wiki cannot drift from the
 release it describes.
 
@@ -11,7 +11,7 @@ The wiki is a second git repository. GitHub creates it the first time a page is
 made in the web UI; after that:
 
 ```bash
-git clone https://github.com/fiwon123/crower.wiki.git
+git clone https://github.com/felipeinoue0/crower.wiki.git
 cp docs/wiki/*.md crower.wiki/
 cd crower.wiki && git add -A && git commit -m "wiki: sync from docs/wiki" && git push
 ```

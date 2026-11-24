@@ -37,6 +37,41 @@ make dev-down       # stop it
 On any OS with Docker and no `make`: `docker compose up`. On native Windows:
 `python scripts/dev-up.py dev-up`.
 
+## 🖥️ The GUI on your host
+
+`make check` does **not** compile the Fyne window: every file in
+`internal/fyneui` is behind `//go:build fyne`, so the gate neither builds nor
+vets it.
+
+```bash
+make gui_linux    # one command: build/crower-gui for this machine
+```
+
+The header check runs first, so a machine without them stops at the install
+command for its distro — apt, dnf or pacman — instead of
+`wayland-client-core.h: No such file or directory`, a C error that reads like a
+broken checkout:
+
+```bash
+make gui-deps                 # the system packages, for your distro
+sudo make gui-deps INSTALL=1  # install them, then re-run make gui_linux
+```
+
+It never runs `sudo` itself. `make dev-shell` needs none of this: the sandbox
+image already carries the toolchain and the headers.
+
+An editor without the tag reports the whole package as undefined
+(`undefined: newGrowingEntry`). The committed `.vscode/settings.json` sets
+`buildTags: fyne` and `CGO_ENABLED=1`; for another editor, give `gopls`
+`buildFlags: ["-tags=fyne"]`.
+
+`fyne.yml` is the only gate that builds and tests this package, and it is
+manual dispatch:
+
+```bash
+gh workflow run fyne.yml --ref <branch>
+```
+
 ## 🏛️ Layout
 
 Four rings, one dependency direction, and a gate in `architecture_test.go` that
@@ -96,6 +131,6 @@ windows or arm64 binaries, and it does not draw a window. See
 
 ---
 
-🐛 [Issues](https://github.com/fiwon123/crower/issues) ·
-🎯 [Roadmap board](https://github.com/users/fiwon123/projects/5) ·
+🐛 [Issues](https://github.com/felipeinoue0/crower/issues) ·
+🎯 [Roadmap board](https://github.com/users/felipeinoue0/projects/5) ·
 🤝 [Contributing](How-to-Contribute)

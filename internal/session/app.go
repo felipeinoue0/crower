@@ -12,12 +12,12 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
-	"github.com/fiwon123/crower/internal/adapters/storage"
-	"github.com/fiwon123/crower/internal/adapters/storage/command"
-	"github.com/fiwon123/crower/internal/domain/timeline"
-	"github.com/fiwon123/crower/internal/shell"
-	"github.com/fiwon123/crower/pkg/logger"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/storage"
+	"github.com/felipeinoue0/crower/internal/adapters/storage/command"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/shell"
+	"github.com/felipeinoue0/crower/pkg/logger"
 )
 
 // Session is everything one crower run needs: where its state lives, what it

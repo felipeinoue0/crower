@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 )
 
 // addPathToFile adds the value to the PATH export of the file. It reports

@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fiwon123/crower/pkg/utils"
+	"github.com/felipeinoue0/crower/pkg/utils"
 	"golang.org/x/sys/windows/registry"
 )
 

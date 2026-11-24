@@ -1,4 +1,4 @@
-module github.com/fiwon123/crower
+module github.com/felipeinoue0/crower
 
 go 1.25.4
 

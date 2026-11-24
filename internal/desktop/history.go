@@ -3,7 +3,7 @@ package desktop
 import (
 	"time"
 
-	"github.com/fiwon123/crower/internal/adapters/notes"
+	"github.com/felipeinoue0/crower/internal/adapters/notes"
 )
 
 // HistoryField is one key/value pair of an entry's note, in the order it was

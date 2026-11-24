@@ -10,9 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fiwon123/crower/actions/workflows/ci.go.yml"><img src="https://github.com/fiwon123/crower/actions/workflows/ci.go.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/fiwon123/crower/releases"><img src="https://img.shields.io/github/v/release/fiwon123/crower" alt="Release"></a>
-  <a href="https://github.com/fiwon123/crower/blob/main/LICENSE"><img src="https://img.shields.io/github/license/fiwon123/crower" alt="License"></a>
+  <a href="https://github.com/felipeinoue0/crower/actions/workflows/ci.go.yml"><img src="https://github.com/felipeinoue0/crower/actions/workflows/ci.go.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/felipeinoue0/crower/releases"><img src="https://img.shields.io/github/v/release/felipeinoue0/crower" alt="Release"></a>
+  <a href="https://github.com/felipeinoue0/crower/blob/main/LICENSE"><img src="https://img.shields.io/github/license/felipeinoue0/crower" alt="License"></a>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
   <a href="#-installation">Install</a> ·
   <a href="#-shell-integration">Shell integration</a> ·
   <a href="#-everyday-use">Everyday use</a> ·
-  <a href="https://github.com/fiwon123/crower/wiki">Wiki</a>
+  <a href="https://github.com/felipeinoue0/crower/wiki">Wiki</a>
 </p>
 
 ---
@@ -52,7 +52,7 @@ $ cr                          # nothing else? a fuzzy finder opens — type, ↑
 
 ```bash
 # 1. Install (Linux / macOS) — Windows: see Installation below
-curl -fsSL https://raw.githubusercontent.com/fiwon123/crower/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/felipeinoue0/crower/main/scripts/install.sh | sh
 
 # 2. Hook it into your shell: PATH, native aliases, tab completion
 crower init --apply          # then open a new terminal
@@ -70,7 +70,7 @@ hi Ada                       # → Hello Ada!
 ### 🐧 Linux · 🍎 macOS — one command
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fiwon123/crower/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/felipeinoue0/crower/main/scripts/install.sh | sh
 ```
 
 It picks the newest release, verifies it against `checksums.txt`, and installs
@@ -80,7 +80,7 @@ It picks the newest release, verifies it against `checksums.txt`, and installs
 ### 🪟 Windows
 
 Download `crower_<tag>_windows_amd64.zip` (or `_arm64`) from the
-[releases page](https://github.com/fiwon123/crower/releases), extract it, and run
+[releases page](https://github.com/felipeinoue0/crower/releases), extract it, and run
 `add_to_path.bat` from the extracted folder. Double-click **`crower-gui.exe`**
 for the window. Then, in PowerShell:
 
@@ -95,7 +95,7 @@ Archives are named `crower_<tag>_<os>_<arch>` and contain `crower`, `cr` and
 
 ```bash
 VERSION=v0.21.0
-curl -LO "https://github.com/fiwon123/crower/releases/download/$VERSION/crower_${VERSION}_linux_amd64.tar.gz"
+curl -LO "https://github.com/felipeinoue0/crower/releases/download/$VERSION/crower_${VERSION}_linux_amd64.tar.gz"
 tar -xzf "crower_${VERSION}_linux_amd64.tar.gz"
 sudo mv crower cr crower-gui /usr/local/bin/
 ```
@@ -105,7 +105,7 @@ No `sudo`? Run `./add_to_path.sh` from the extracted folder instead.
 ### 🛠️ From source
 
 ```bash
-git clone https://github.com/fiwon123/crower.git && cd crower
+git clone https://github.com/felipeinoue0/crower.git && cd crower
 go build -o crower . && cp crower cr      # Go 1.25.4+
 ```
 
@@ -235,7 +235,7 @@ crower share list && crower share pull docker-setup   # from a registry
 ```
 
 A registry is any HTTP server with `index.json` + `packs/<name>.toml` — see
-[crower-resources](https://github.com/fiwon123/crower-resources).
+[crower-resources](https://github.com/felipeinoue0/crower-resources).
 
 ## ⚙️ Configuration
 
@@ -270,13 +270,13 @@ and conventions: [AGENTS.md](AGENTS.md) · [PROJECT_CONTEXT.md](PROJECT_CONTEXT.
 
 | I want to… | Read |
 |---|---|
-| 🐚 set up my shell | [Shell integration](https://github.com/fiwon123/crower/wiki/Shell-Integration) |
-| 📖 look up a command or flag | [Command reference](https://github.com/fiwon123/crower/wiki/Command-Reference) |
-| 🍳 copy a working example | [Recipes](https://github.com/fiwon123/crower/wiki/Recipes) |
-| 🧩 script against crower | [Scripting](https://github.com/fiwon123/crower/wiki/Scripting) |
-| 🚑 fix something | [Troubleshooting](https://github.com/fiwon123/crower/wiki/Troubleshooting) |
-| 🏛️ understand the code | [Architecture](https://github.com/fiwon123/crower/wiki/Architecture) |
-| 🎯 see what's planned | [Roadmap board](https://github.com/users/fiwon123/projects/5) |
+| 🐚 set up my shell | [Shell integration](https://github.com/felipeinoue0/crower/wiki/Shell-Integration) |
+| 📖 look up a command or flag | [Command reference](https://github.com/felipeinoue0/crower/wiki/Command-Reference) |
+| 🍳 copy a working example | [Recipes](https://github.com/felipeinoue0/crower/wiki/Recipes) |
+| 🧩 script against crower | [Scripting](https://github.com/felipeinoue0/crower/wiki/Scripting) |
+| 🚑 fix something | [Troubleshooting](https://github.com/felipeinoue0/crower/wiki/Troubleshooting) |
+| 🏛️ understand the code | [Architecture](https://github.com/felipeinoue0/crower/wiki/Architecture) |
+| 🎯 see what's planned | [Roadmap board](https://github.com/users/felipeinoue0/projects/5) |
 
 ## 💬 Contributing
 
@@ -289,7 +289,7 @@ This project says what it verified. CI tests and builds on Linux/amd64 and
 cross-compiles the rest — no gate executes the other builds.
 
 - 🍎 **macOS** and 🪟 **Windows** builds are cross-compiled, never started by CI
-  (macOS shell operations: [#129](https://github.com/fiwon123/crower/issues/129)).
+  (macOS shell operations: [#129](https://github.com/felipeinoue0/crower/issues/129)).
 - 💪 **arm64** builds are never executed on ARM hardware.
 - 🐟 **fish, PowerShell and cmd hooks** are unit-tested for shape; bash and zsh
   were run in real sessions.
@@ -297,7 +297,7 @@ cross-compiles the rest — no gate executes the other builds.
   on a real console.
 
 Running it and reporting what happened — "it worked" included — is the most
-useful contribution right now: [Verifying claims](https://github.com/fiwon123/crower/wiki/Verifying-claims).
+useful contribution right now: [Verifying claims](https://github.com/felipeinoue0/crower/wiki/Verifying-claims).
 
 ## 📄 License
 

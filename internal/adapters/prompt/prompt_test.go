@@ -5,10 +5,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/fiwon123/crower/internal/adapters/prompt"
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/operation"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/adapters/prompt"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/operation"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // reader answers from a fixed list of lines, so a prompt loop can be tested

@@ -3,7 +3,7 @@ name: Bug Report
 about: Report a bug or unexpected behavior
 title: "fix: "
 labels: bug
-assignees: fiwon123
+assignees: felipeinoue0
 ---
 
 ## Description

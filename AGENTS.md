@@ -77,6 +77,7 @@ CONTRIBUTING.md      the contributor contract (issue first, make check, evidence
 ```bash
 make check           # the local gate: gofmt, vet, test, build
 make release         # build the Windows and Linux release archives into build/
+make gui_linux       # the Fyne window, built for this machine into build/
 make clean           # remove build/
 go run ./ --help     # run from source
 go test ./...        # tests only
@@ -107,6 +108,16 @@ On native Windows, where `make` does not exist: `python scripts/dev-up.py dev-up
 The container pins Go 1.25.4 — the version in `go.mod` — so a build inside the
 sandbox is the build CI runs. The sandbox is **optional**: a host toolchain
 still works, and `make check` does not require Docker.
+
+The GUI is the one exception: `internal/fyneui` is behind `//go:build fyne` and
+needs CGO plus the X11/GL and Wayland headers, which the image has and a bare
+host usually does not. `make gui_linux` builds the window for the host in one
+command, and checks those headers first — so a machine without them gets the
+install command for its distro (apt, dnf or pacman) instead of a C header
+error. `make gui-deps` prints that package list (`INSTALL=1` installs it);
+without the headers the build fails on a C header, not on Go. `make check`
+never compiles the package, so the local gate cannot report either problem —
+`fyne.yml` is its only gate.
 
 The image creates the directories the compose file mounts into, owned by the
 runtime user: Docker creates a mount destination the image does not contain as
@@ -211,7 +222,7 @@ about the sandbox made from inside it cannot be about the host's Docker.
 
 ## Key Conventions
 
-- **Assignee**: `fiwon123` — `workflow.md` tells agents to read `ASSIGNEE` from here before assigning issues and PRs
+- **Assignee**: `felipeinoue0` — `workflow.md` tells agents to read `ASSIGNEE` from here before assigning issues and PRs
 - **GitHub credentials**: `GH_TOKEN` or `GITHUB_TOKEN` — either name works, and neither is defined here. The values belong in the host environment; nothing is written into the repository.
 - **Model assignments**: `opencode.json` assigns `opencode/big-pickle` to `build` and `opencode/mimo-v2.6-flash-free` to `plan`. That is a starting point, not a recommendation — no prompt depends on which model an agent runs. Verify a new id with `opencode models` first: a catalog entry on models.dev does not guarantee the installed build offers it, and an unresolvable id fails at spawn rather than at config load.
 - **Repository link**: the README links to the GitHub repository, and the release page is linked from the README — a reader is always one click from the source and from the download.
@@ -219,7 +230,7 @@ about the sandbox made from inside it cannot be about the host's Docker.
 - **Testing**: `go test` — standard library only, no assertion framework
 - **CI**: GitHub Actions runs gofmt, vet, test, and build on `dev` → `main` pull requests only — never on a feature-branch pull request
 - **Local testing**: run `make check` before pushing a feature branch. CI is not the gate for feature work; the local gate is.
-- **Version**: the binary reports the tag it was built from, injected with `-X` into `github.com/fiwon123/crower/cmd.Version`. A build without that variable fails.
+- **Version**: the binary reports the tag it was built from, injected with `-X` into `github.com/felipeinoue0/crower/cmd.Version`. A build without that variable fails.
 
 ## Environment and Secret-File Rules
 
@@ -342,15 +353,15 @@ Verify them once after a transfer.
 
 ### Project board
 
-- **This repository's board**: <https://github.com/users/fiwon123/projects/5>.
+- **This repository's board**: <https://github.com/users/felipeinoue0/projects/5>.
 - **Issues are the source of truth; the board is a view of them.** Every open
   issue belongs on the board, with its milestone and its status.
 - Status values are **Todo**, **In Progress**, **Done** — the board's own
   `Status` field. Add columns only if the workflow genuinely needs them; a board
   that mirrors four states nothing updates is noise.
 - Keep cards moving with the steps above: issue created → Todo, branch opened →
-  In Progress, PR merged → Done. `gh project item-add 5 --owner fiwon123 --url <issue-url>`
-  adds an issue; `gh project item-list 5 --owner fiwon123` reads the board.
+  In Progress, PR merged → Done. `gh project item-add 5 --owner felipeinoue0 --url <issue-url>`
+  adds an issue; `gh project item-list 5 --owner felipeinoue0` reads the board.
 - Do not duplicate the link graph in comments: the issue's branch, PR and
   milestone are already on it, and the board renders them.
 

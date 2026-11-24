@@ -1,8 +1,8 @@
 package desktop
 
 import (
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // State is what a window shows after a setup switch: the commands and the

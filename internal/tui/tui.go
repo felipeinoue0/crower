@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fiwon123/crower/internal/domain/catalog"
-	"github.com/fiwon123/crower/internal/domain/timeline"
+	"github.com/felipeinoue0/crower/internal/domain/catalog"
+	"github.com/felipeinoue0/crower/internal/domain/timeline"
 )
 
 // Executor runs a managed command for the interface.

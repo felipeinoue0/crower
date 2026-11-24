@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	fyne.io/fyne/v2 v2.8.2
 	github.com/go-text/typesetting v0.3.5
-	github.com/mattn/go-runewidth v0.0.24
+	github.com/mattn/go-runewidth v0.0.31
 	github.com/minio/selfupdate v0.6.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pelletier/go-toml/v2 v2.4.3

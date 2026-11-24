@@ -87,3 +87,11 @@ case ":$PATH:" in
         echo "Run '$SOURCE_CMD' or open a new terminal to use it now."
         ;;
 esac
+
+# Set up the shell hook in every shell on this machine, so commands that change
+# folder (cd) or run in the shell (--here) work in a new terminal with no
+# further step.
+if [ -x "$SCRIPT_DIR/crower" ]; then
+    echo
+    "$SCRIPT_DIR/crower" init --all || echo "Shell setup failed; run 'crower init --apply' later."
+fi

@@ -449,10 +449,22 @@ func TestCmdWithoutCdCommandsKeepsCr(t *testing.T) {
 // "a", "cr a" and "crower execute a" move the shell; "cr list" reaches the
 // program because list is a subcommand.
 func TestPowerShellWrapperMovesTheShell(t *testing.T) {
-	pwsh, err := exec.LookPath("pwsh")
-	if err != nil {
-		t.Skip("pwsh not installed")
+	// PowerShell 7 and Windows PowerShell 5.1 load the same hook; both must
+	// run it.
+	for _, name := range []string{"pwsh", "powershell"} {
+		t.Run(name, func(t *testing.T) {
+			pwsh, err := exec.LookPath(name)
+			if err != nil {
+				t.Skipf("%s not installed", name)
+			}
+
+			testPowerShellWrapper(t, pwsh)
+		})
 	}
+}
+
+func testPowerShellWrapper(t *testing.T, pwsh string) {
+	t.Helper()
 
 	bin := t.TempDir()
 	fake := filepath.Join(bin, "crower")
@@ -493,7 +505,7 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out, err := exec.Command(pwsh, "-NoProfile", "-NonInteractive", "-File", file).CombinedOutput()
+	out, err := exec.Command(pwsh, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", file).CombinedOutput()
 	if err != nil {
 		t.Fatalf("pwsh: %v\n%s", err, out)
 	}
@@ -663,5 +675,53 @@ func TestHerePerShell(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// Every hook tells crower it is loaded, under the name crower compares with.
+func TestHooksExportTheirName(t *testing.T) {
+	for shell, want := range map[string]string{
+		"bash":       "export CROWER_HOOK=bash\n",
+		"zsh":        "export CROWER_HOOK=zsh\n",
+		"fish":       "set -gx CROWER_HOOK fish\n",
+		"powershell": "$env:CROWER_HOOK = 'powershell'\n",
+	} {
+		script, err := Script(shell, nil, Options{Bin: "cr"})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(script, want) {
+			t.Errorf("%s hook lacks %q", shell, want)
+		}
+	}
+}
+
+// With a managed macro file, cmd always gets cr and crower macros, and they
+// reload the file after the program so new commands work in the same window.
+func TestCmdMacrosReloadTheFile(t *testing.T) {
+	file := `C:\Users\Ann\crower\crower.doskey`
+
+	plain, err := Script("cmd", []string{"deploy"}, Options{Bin: "cr", MacroFile: file})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, want := range []string{
+		"cr=cr $* & doskey /macrofile=\"" + file + "\"\n",
+		"crower=crower $* & doskey /macrofile=\"" + file + "\"\n",
+	} {
+		if !strings.Contains(plain, want) {
+			t.Errorf("script lacks %q:\n%s", want, plain)
+		}
+	}
+
+	withCd, err := Script("cmd", []string{"a"}, Options{Bin: "cr", MacroFile: file, Dirs: map[string]string{"a": `C:\x`}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !strings.Contains(withCd, "else cr $* & doskey /macrofile=\""+file+"\"\n") {
+		t.Errorf("the cd chain does not end in the reload:\n%s", withCd)
 	}
 }

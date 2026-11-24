@@ -72,6 +72,10 @@ type Options struct {
 	// the hook asks crower for the line (`execute <name> --emit`) and
 	// evaluates it, so a cd, an export or a `source` stays in effect.
 	Here map[string]bool
+	// MacroFile is the doskey file cmd's AutoRun loads (crower manages it).
+	// When set, cmd's cr and crower macros reload it after every run, so a
+	// command created in a window is usable in that window at once.
+	MacroFile string
 }
 
 // reservedWords is Reserved filtered to words every shell can match
@@ -194,8 +198,15 @@ func writeCmdWrappers(b *strings.Builder, names []string, opts Options) {
 	dirs := cdNames(names, opts)
 	heres := hereNames(names, opts)
 
-	if len(dirs) == 0 && len(heres) == 0 {
+	if len(dirs) == 0 && len(heres) == 0 && opts.MacroFile == "" {
 		return
+	}
+
+	// After the program, reload the macro file: crower rewrites it when a
+	// command changes. Concatenated, not formatted: a path may hold a "%".
+	reload := ""
+	if opts.MacroFile != "" {
+		reload = ` & doskey /macrofile="` + opts.MacroFile + `"`
 	}
 
 	reserved := opts.reservedWords()
@@ -222,7 +233,13 @@ func writeCmdWrappers(b *strings.Builder, names []string, opts Options) {
 			}
 		}
 
-		fmt.Fprintf(b, "%s=%s else %s $*\n", bin, strings.Join(chain, " else "), bin)
+		last := bin + " $*" + reload
+		if len(chain) == 0 {
+			fmt.Fprintf(b, "%s=%s\n", bin, last)
+			continue
+		}
+
+		fmt.Fprintf(b, "%s=%s else %s\n", bin, strings.Join(chain, " else "), last)
 	}
 }
 
@@ -383,6 +400,10 @@ crower() {
 
 cr() { crower "$@"; }
 
+# Tells crower this shell has the hook, so it neither offers to set it up nor
+# warns that a cd command cannot move this terminal.
+export CROWER_HOOK=%[1]s
+
 __crower_names=""
 __crower_cmap=""
 __crower_hnames=""
@@ -473,6 +494,9 @@ function cr --wraps crower
     crower $argv
 end
 
+# Tells crower this shell has the hook.
+set -gx CROWER_HOOK fish
+
 set -g __crower_names
 set -g __crower_cdnames
 set -g __crower_cddirs
@@ -556,6 +580,9 @@ function global:crower {
 }
 
 function global:cr { crower @args }
+
+# Tells crower this shell has the hook.
+$env:CROWER_HOOK = 'powershell'
 
 %[4]s`, opts.Bin, psQuote(exe), strings.Join(quoted, ", "), aliases, psList(opts.reservedWords()))
 

@@ -74,6 +74,10 @@ Arguments after the command are applied to its steps.`,
 			return missingArgs(cmd, "a command to show")
 		}
 
+		if request.Key != "" && !emitFlag && !dryRunFlag {
+			hintNoHook(cfg.Catalog(), request.Key)
+		}
+
 		session := newExecuteSession(cfg)
 
 		return executecommand.New(session, session, session, session, session).Run(request)

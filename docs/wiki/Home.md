@@ -19,7 +19,7 @@ Every change is recorded and can be undone.
 ## ⚡ Start in thirty seconds
 
 ```bash
-crower init --apply             # once: PATH, native aliases, completion
+crower init --apply             # only if not set up already (installers do it)
 crower import --from-shell      # bring the aliases you already have
 
 # a shortcut for the command you keep retyping

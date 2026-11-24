@@ -94,6 +94,11 @@ done
 echo "Installed crower and cr into ${INSTALL_DIR}"
 "$INSTALL_DIR/crower" --version
 
+# Set up the shell hook in every shell on this machine, so commands that change
+# folder (cd) or run in the shell (--here) work in a new terminal.
+echo
+"$INSTALL_DIR/crower" init --all || echo "Shell setup failed; run 'crower init --apply' later."
+
 case ":${PATH}:" in
 *":${INSTALL_DIR}:"*) ;;
 *)

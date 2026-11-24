@@ -127,6 +127,7 @@ func (r *Registry) Pack(name string) ([]catalog.Command, string, error) {
 			Cwd:         value.Cwd,
 			Env:         value.Env,
 			Timeout:     value.Timeout,
+			Here:        value.Here,
 		})
 	}
 

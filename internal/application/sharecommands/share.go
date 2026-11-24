@@ -326,6 +326,7 @@ func (u *UseCase) importPack(pack []catalog.Command, overwrite bool) (int, error
 			Cwd:         imported.Cwd,
 			Env:         maps.Clone(imported.Env),
 			Timeout:     imported.Timeout,
+			Here:        imported.Here,
 		})
 
 		stagedNames[key] = true

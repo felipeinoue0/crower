@@ -376,3 +376,24 @@ func TestCommitTwice(t *testing.T) {
 		t.Errorf("snapshot 00002.yaml: %v", err)
 	}
 }
+
+// An in-shell command keeps its flag through the write path and a reload: the
+// hook decides how to run it from what is on disk.
+func TestCommitKeepsHere(t *testing.T) {
+	cfg := newTestConfig(t)
+
+	commands := catalog.New(nil, []catalog.Command{{Name: "act", Exec: "source .venv/bin/activate", Here: true}})
+
+	if err := cfg.Commit(commands, operation.Create, "act", "main_operation=create"); err != nil {
+		t.Fatalf("Commit: %v", err)
+	}
+
+	back := newTestConfigAt(t, cfg.ConfigFile()).allCommandsByName.Get("act")
+	if back == nil || !back.Here {
+		t.Fatalf("reloaded = %+v, want Here kept on disk", back)
+	}
+
+	if got, _ := newTestConfigAt(t, cfg.ConfigFile()).Catalog().Get("act"); !got.Here {
+		t.Errorf("catalog command = %+v, want Here", got)
+	}
+}

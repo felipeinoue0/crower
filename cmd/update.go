@@ -92,6 +92,11 @@ With no field given, crower asks for each one. --description, --params, --cwd,
 			request.Changes.Timeout = &value
 		}
 
+		if cmd.Flags().Changed("here") {
+			value := here
+			request.Changes.Here = &value
+		}
+
 		if len(args) != 0 {
 			request.Key = args[0]
 		}
@@ -116,6 +121,7 @@ func init() {
 	AddIconFlag(updateCmd, &icon)
 	AddGroupFlag(updateCmd, &group)
 	AddMetadataFlags(updateCmd, &description, &params, &cwd, &shell, &timeout)
+	AddHereFlag(updateCmd, &here)
 
 	updateCmd.Flags().BoolVarP(&last, "last", "l", false, "update recent updated command")
 	updateCmd.Flags().BoolVarP(&create, "create", "c", false, "update recent created command")

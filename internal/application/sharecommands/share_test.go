@@ -608,3 +608,16 @@ func TestImportAliasesAsksOnARealClash(t *testing.T) {
 		t.Errorf("asked %v, saved %d; want one question and nothing saved", h.prompt.asked, len(h.state.saved))
 	}
 }
+
+func TestImportKeepsHere(t *testing.T) {
+	h := newHarness()
+	h.packs.read = []catalog.Command{{Name: "act", Exec: "source .venv/bin/activate", Here: true}}
+
+	if err := h.useCase().Import("pack.toml", false); err != nil {
+		t.Fatalf("Import: %v", err)
+	}
+
+	if got, found := h.state.saved[0].Get("act"); !found || !got.Here {
+		t.Errorf("imported = %+v, want Here kept", got)
+	}
+}

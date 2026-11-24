@@ -88,7 +88,7 @@ jobs:
       # The hook's PowerShell wrapper and cmd macros run in the real shells
       # only here; elsewhere pwsh is usually absent and cmd never is present.
       - name: Test the shell hook in PowerShell and cmd
-        run: go test ./internal/adapters/shellhook -run 'TestPowerShellWrapperMovesTheShell|TestCmdMacrosRunInCmd' -v
+        run: go test ./internal/adapters/shellhook -run 'TestPowerShellWrapperMovesTheShell|TestCmdMacrosRunInCmd|TestCmdHereRunsInCmd' -v
 
       - name: Build
         run: go build ./...

@@ -17,6 +17,7 @@ func TestPacksRoundTrip(t *testing.T) {
 	written := []catalog.Command{
 		{Name: "greet", Aliases: []string{"hi", "hello"}, Exec: "echo hi", Description: "Say hi", Params: []string{"name"}, Shell: "pwsh", Cwd: "~/api", Env: map[string]string{"STAGE": "prod"}, Timeout: "30s"},
 		{Name: "multi", Exec: "unused", Steps: []string{"echo a", "echo b"}},
+		{Name: "act", Exec: "source .venv/bin/activate", Here: true},
 	}
 
 	if err := storage.NewPacks().Write(path, written); err != nil {
@@ -52,6 +53,10 @@ func TestPacksRoundTrip(t *testing.T) {
 
 	if multi := byName["multi"]; !slices.Equal(multi.Steps, []string{"echo a", "echo b"}) {
 		t.Errorf("multi = %+v, want the steps", multi)
+	}
+
+	if !byName["act"].Here || byName["greet"].Here {
+		t.Errorf("Here = act:%v greet:%v, want true and false", byName["act"].Here, byName["greet"].Here)
 	}
 }
 

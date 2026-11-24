@@ -36,6 +36,12 @@ type Request struct {
 	// DryRun prints what would run -- every expanded step and the target --
 	// and runs nothing. Nothing is recorded.
 	DryRun bool
+
+	// Emit is the shell hook's half of an in-shell (--here) command: it
+	// prints the line with its parameters applied and records the run, and
+	// the calling shell evaluates the line. A command that is not --here is
+	// refused.
+	Emit bool
 }
 
 // State is the command set and the history it is recorded in.
@@ -126,6 +132,10 @@ func New(state State, output Output, prompt Prompter, runner Runner, notes Notes
 func (u *UseCase) Run(request Request) error {
 	if request.DryRun {
 		return u.dryRun(request)
+	}
+
+	if request.Emit {
+		return u.emit(request)
 	}
 
 	if request.Last != "" {
@@ -314,6 +324,40 @@ func plan(command catalog.Command, params []string) ([]string, Target, error) {
 	}
 
 	return steps, target, nil
+}
+
+// emit prints an in-shell command's line for the calling shell to evaluate,
+// and records the run as an execution: from the user's side it is one.
+func (u *UseCase) emit(request Request) error {
+	if request.Key == "" {
+		return errors.CommandNotFound("")
+	}
+
+	command, found := u.state.Commands().Resolve(request.Key)
+	if !found {
+		return errors.CommandNotFound(request.Key)
+	}
+
+	if !command.Here {
+		return fmt.Errorf("%s: %w", command.Name, errors.ErrNotHere)
+	}
+
+	if err := command.CheckHere(); err != nil {
+		return fmt.Errorf("%s: %w", command.Name, err)
+	}
+
+	steps, _, err := plan(command, request.Params)
+	if err != nil {
+		return err
+	}
+
+	if len(steps) == 0 {
+		return fmt.Errorf("%s: empty command", command.Name)
+	}
+
+	u.output.Result(strings.Join(steps, "\n"))
+
+	return u.state.Record(operation.Execute, command.Name, u.notes.ExecuteCommandNote(command, request.Params))
 }
 
 // dryRun prints the plan for the request's command and runs nothing.

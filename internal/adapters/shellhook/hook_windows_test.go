@@ -115,3 +115,66 @@ func TestCmdMacrosRunInCmd(t *testing.T) {
 		})
 	}
 }
+
+// An in-shell command through the cr macro, run by the real cmd.exe: the lines
+// crower emits run in this cmd -- a variable survives -- and `call` gives them
+// the %VAR% expansion a typed line gets.
+func TestCmdHereRunsInCmd(t *testing.T) {
+	bin := t.TempDir()
+	fake := "@if \"%3\"==\"--emit\" goto emit\r\n@echo ran: %*\r\n@exit /b 0\r\n:emit\r\n@echo set CROWER_T=hi\r\n@echo set CROWER_U=%%USERNAME%%x\r\n@exit /b 0\r\n"
+	if err := os.WriteFile(filepath.Join(bin, "cr.cmd"), []byte(fake), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	opts := Options{Bin: "cr", Here: map[string]bool{"act": true}}
+	script, err := Script("cmd", []string{"act"}, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	macros := map[string]string{}
+	for _, line := range strings.Split(script, "\n") {
+		if name, body, ok := strings.Cut(line, "="); ok {
+			macros[name] = body
+		}
+	}
+
+	tests := []struct {
+		macro string
+		args  []string
+	}{
+		{"act", nil},
+		{"cr", []string{"act"}},
+		{"cr", []string{"execute", "act"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.macro+" "+strings.Join(tt.args, " "), func(t *testing.T) {
+			body, ok := macros[tt.macro]
+			if !ok {
+				t.Fatalf("no %s macro:\n%s", tt.macro, script)
+			}
+
+			line := "(" + doskeyExpand(body, tt.args) + ") & set CROWER_"
+
+			cmd := exec.Command("cmd")
+			cmd.SysProcAttr = &syscall.SysProcAttr{CmdLine: `cmd /d /s /c "` + line + `"`}
+			cmd.Env = append(os.Environ(), "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("cmd: %v\n%s", err, out)
+			}
+
+			got := strings.ReplaceAll(string(out), "\r\n", "\n")
+			if !strings.Contains(got, "CROWER_T=hi\n") {
+				t.Errorf("the emitted set did not stay in this cmd:\n%s", got)
+			}
+
+			want := "CROWER_U=" + os.Getenv("USERNAME") + "x\n"
+			if !strings.Contains(strings.ToLower(got), strings.ToLower(want)) {
+				t.Errorf("output lacks %q (%%USERNAME%% not expanded):\n%s", want, got)
+			}
+		})
+	}
+}

@@ -25,6 +25,10 @@ func (c Catalog) Add(command Command) (Catalog, error) {
 		return c, fmt.Errorf("empty exec")
 	}
 
+	if err := command.CheckHere(); err != nil {
+		return c, err
+	}
+
 	if _, taken := c.byName[command.Name]; taken {
 		return c, fmt.Errorf("found name, command already added")
 	}

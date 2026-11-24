@@ -89,6 +89,7 @@ func (s restoreSession) FindCommand(key, file string) (catalog.Command, error) {
 		Cwd:         stored.Cwd,
 		Env:         stored.Env,
 		Timeout:     stored.Timeout,
+		Here:        stored.Here,
 	}, nil
 }
 

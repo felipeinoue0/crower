@@ -235,5 +235,10 @@ func (u *UseCase) showChange(before catalog.Command, changes catalog.Changes) {
 	u.output.Info("Name:    ", changes.Name)
 	u.output.Info("Aliases: ", changes.Aliases)
 	u.output.Info("Exec:    ", changes.Exec)
+
+	if changes.Here != nil && *changes.Here != before.Here {
+		u.output.Info("Here:    ", before.Here, " -> ", *changes.Here)
+	}
+
 	u.output.Info("")
 }

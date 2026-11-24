@@ -456,10 +456,10 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 
 	bin := t.TempDir()
 	fake := filepath.Join(bin, "crower")
-	body := "#!/bin/sh\necho \"ran: $*\"\n"
+	body := "#!/bin/sh\nif [ \"$3\" = --emit ]; then echo \"\\$env:CROWER_T = 'hi'\"; exit 0; fi\necho \"ran: $*\"\n"
 	if runtime.GOOS == "windows" {
 		fake += ".cmd"
-		body = "@echo ran: %*\r\n@exit /b 0\r\n"
+		body = "@if \"%3\"==\"--emit\" goto emit\r\n@echo ran: %*\r\n@exit /b 0\r\n:emit\r\n@echo $env:CROWER_T = 'hi'\r\n@exit /b 0\r\n"
 	}
 
 	if err := os.WriteFile(fake, []byte(body), 0o755); err != nil {
@@ -471,8 +471,8 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := Options{Bin: "crower", Exe: fake, Dirs: map[string]string{"a": target, "list": target}, Reserved: []string{"list"}}
-	script, err := Script("powershell", []string{"a", "list"}, opts)
+	opts := Options{Bin: "crower", Exe: fake, Dirs: map[string]string{"a": target, "list": target}, Here: map[string]bool{"act": true}, Reserved: []string{"list"}}
+	script, err := Script("powershell", []string{"a", "list", "act"}, opts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -483,7 +483,10 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 		"a\n\"bare=$((Get-Location).Path)\"\n" + back +
 		"cr a\n\"cr-a=$((Get-Location).Path)\"\n" + back +
 		"crower execute a\n\"exec-a=$((Get-Location).Path)\"\n" + back +
-		"cr list\n\"list=$((Get-Location).Path)\"\n"
+		"cr list\n\"list=$((Get-Location).Path)\"\n" +
+		"act\n\"here1=$env:CROWER_T\"\n$env:CROWER_T = $null\n" +
+		"cr act\n\"here2=$env:CROWER_T\"\n$env:CROWER_T = $null\n" +
+		"crower execute act\n\"here3=$env:CROWER_T\"\n"
 
 	file := filepath.Join(t.TempDir(), "run.ps1")
 	if err := os.WriteFile(file, []byte(run), 0o600); err != nil {
@@ -498,6 +501,12 @@ func TestPowerShellWrapperMovesTheShell(t *testing.T) {
 	got := strings.ReplaceAll(string(out), "\r\n", "\n")
 	if !strings.Contains(got, "ran: list") {
 		t.Errorf("cr list did not reach the program:\n%s", got)
+	}
+
+	for _, want := range []string{"here1=hi\n", "here2=hi\n", "here3=hi\n"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("output lacks %q (the --here line did not run in this shell):\n%s", want, got)
+		}
 	}
 
 	for _, want := range []struct{ key, dir string }{
@@ -522,4 +531,137 @@ func endsInDir(out, key, dir string) bool {
 	}
 
 	return false
+}
+
+// fakeEmitter is a crower stand-in for --here: `execute <name> --emit -- args`
+// prints a line that sets a variable and changes folder; anything else echoes.
+func fakeEmitter(t *testing.T, dir string) string {
+	t.Helper()
+
+	bin := t.TempDir()
+	body := `#!/bin/sh
+if [ "$3" = "--emit" ]; then
+  case "$2" in
+    act) printf '%s\n' "export CROWER_T=hi" "cd '` + dir + `'" ;;
+    greet) printf 'export G=%s\n' "'$5'" ;;
+  esac
+  exit 0
+fi
+echo "ran: $*"
+`
+	if err := os.WriteFile(filepath.Join(bin, "crower"), []byte(body), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	return bin
+}
+
+// End to end in bash and zsh: a --here command, by its name, through cr and
+// through cr execute, runs in this shell -- its variable and its cd survive --
+// and its arguments reach crower.
+func TestPosixHereRunsInTheShell(t *testing.T) {
+	for _, shell := range []string{"bash", "zsh"} {
+		t.Run(shell, func(t *testing.T) {
+			path, err := exec.LookPath(shell)
+			if err != nil {
+				t.Skipf("%s not installed", shell)
+			}
+
+			// The fake writes the folder in single quotes, so it has none.
+			target := filepath.Join(t.TempDir(), "here dir")
+			if err := os.Mkdir(target, 0o755); err != nil {
+				t.Fatal(err)
+			}
+
+			bin := fakeEmitter(t, target)
+
+			opts := Options{Bin: "crower", Here: map[string]bool{"act": true, "greet": true}, Reserved: []string{"list"}}
+			script, err := Script(shell, []string{"act", "greet", "deploy"}, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			start := t.TempDir()
+			reset := "unset CROWER_T; cd " + posixQuote(start) + "\n"
+			body := script + "\n" + reset +
+				"act\necho \"bare=$CROWER_T $PWD\"\n" + reset +
+				"cr act\necho \"cr=$CROWER_T $PWD\"\n" + reset +
+				"crower execute act\necho \"exec=$CROWER_T $PWD\"\n" +
+				"greet 'Ann Lee'\necho \"g1=$G\"\n" +
+				"cr greet Bob\necho \"g2=$G\"\n" +
+				"cr execute greet Cy\necho \"g3=$G\"\n" +
+				"cr deploy -x\n"
+			if shell == "bash" {
+				body = "shopt -s expand_aliases\n" + body
+			}
+
+			file := filepath.Join(t.TempDir(), "run")
+			if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			args := []string{"--norc", file}
+			if shell == "zsh" {
+				args = []string{"-f", file}
+			}
+
+			cmd := exec.Command(path, args...)
+			cmd.Env = append(os.Environ(), "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("%s: %v\n%s", shell, err, out)
+			}
+
+			got := string(out)
+			for _, want := range []string{
+				"bare=hi " + target + "\n",
+				"cr=hi " + target + "\n",
+				"exec=hi " + target + "\n",
+				"g1=Ann Lee\n", "g2=Bob\n", "g3=Cy\n",
+				"ran: deploy -x\n",
+			} {
+				if !strings.Contains(got, want) {
+					t.Errorf("output lacks %q:\n%s", want, got)
+				}
+			}
+		})
+	}
+}
+
+func TestHerePerShell(t *testing.T) {
+	opts := Options{Bin: "cr", Here: map[string]bool{"act": true}, Reserved: []string{"list"}}
+	names := []string{"act", "deploy"}
+
+	tests := []struct {
+		shell string
+		want  []string
+	}{
+		{"bash", []string{"__crower_hdef act\n", `__crower_line="$(command cr execute "$1" --emit -- "${@:2}")" || return`}},
+		{"fish", []string{"set -ga __crower_hnames act\n", "        __crower_here act $argv\n", "command cr execute $argv[1] --emit -- $argv[2..-1]"}},
+		{"powershell", []string{
+			"$global:__crower_here['act'] = $true\n",
+			"function global:act { __crower_run_here 'act' @args }",
+			"& $global:__crower_exe execute $name --emit '--' @rest",
+		}},
+		{"cmd", []string{
+			"act=for /f \"usebackq delims=\" %i in (`cr execute act --emit -- $*`) do @call %i\n",
+			`cr=if "$1 $2"=="execute act" (for /f "usebackq delims=" %i in (` + "`cr execute act --emit -- $3 $4 $5 $6 $7 $8 $9`" + `) do @call %i) else if "$1"=="act" (`,
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.shell, func(t *testing.T) {
+			script, err := Script(tt.shell, names, opts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, want := range tt.want {
+				if !strings.Contains(script, want) {
+					t.Errorf("script lacks %q:\n%s", want, script)
+				}
+			}
+		})
+	}
 }

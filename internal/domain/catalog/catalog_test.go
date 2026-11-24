@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"errors"
 	"slices"
 	"testing"
 )
@@ -312,5 +313,72 @@ func TestCommandCloneCopiesMetadata(t *testing.T) {
 	again, _ := original.Get("greet")
 	if again.Params[0] != "name" {
 		t.Errorf("params = %v, want the catalog untouched", again.Params)
+	}
+}
+
+func TestCheckHere(t *testing.T) {
+	tests := []struct {
+		name    string
+		command Command
+		wantErr bool
+	}{
+		{"not here", Command{Exec: "ls", Shell: "pwsh", Steps: []string{"a"}}, false},
+		{"plain", Command{Exec: "export A=1", Here: true}, false},
+		{"steps", Command{Exec: "x", Steps: []string{"a"}, Here: true}, true},
+		{"shell", Command{Exec: "x", Shell: "sh", Here: true}, true},
+		{"cwd", Command{Exec: "x", Cwd: "/tmp", Here: true}, true},
+		{"env", Command{Exec: "x", Env: map[string]string{"A": "1"}, Here: true}, true},
+		{"timeout", Command{Exec: "x", Timeout: "5s", Here: true}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.command.CheckHere()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("CheckHere() = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil && !errors.Is(err, ErrHereConflict) {
+				t.Errorf("CheckHere() = %v, want ErrHereConflict", err)
+			}
+		})
+	}
+}
+
+func TestAddRefusesAConflictingHere(t *testing.T) {
+	_, err := New(nil, nil).Add(Command{Name: "x", Exec: "ls", Cwd: "/tmp", Here: true})
+	if !errors.Is(err, ErrHereConflict) {
+		t.Errorf("Add = %v, want ErrHereConflict", err)
+	}
+}
+
+func TestUpdateHere(t *testing.T) {
+	on, off := true, false
+	c := New(nil, []Command{{Name: "act", Exec: "export A=1"}, {Name: "far", Exec: "ls", Cwd: "/tmp"}})
+
+	result, err := c.Update("act", Changes{Here: &on})
+	if err != nil {
+		t.Fatalf("Update(on): %v", err)
+	}
+
+	if got, _ := result.Catalog.Get("act"); !got.Here {
+		t.Errorf("act = %+v, want Here", got)
+	}
+
+	if _, err := result.Catalog.Update("act", Changes{Here: &on}); !errors.Is(err, ErrNoChange) {
+		t.Errorf("Update(on again) = %v, want ErrNoChange", err)
+	}
+
+	back, err := result.Catalog.Update("act", Changes{Here: &off})
+	if err != nil {
+		t.Fatalf("Update(off): %v", err)
+	}
+
+	if got, _ := back.Catalog.Get("act"); got.Here {
+		t.Errorf("act = %+v, want Here off", got)
+	}
+
+	if _, err := c.Update("far", Changes{Here: &on}); !errors.Is(err, ErrHereConflict) {
+		t.Errorf("Update(far, on) = %v, want ErrHereConflict", err)
 	}
 }

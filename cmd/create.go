@@ -24,6 +24,7 @@ var params []string
 var cwd string
 var shell string
 var timeout string
+var here bool
 
 var scriptFlag bool
 var processName string
@@ -71,6 +72,7 @@ the last command you ran.`,
 			Cwd:         strings.TrimSpace(cwd),
 			Shell:       strings.TrimSpace(shell),
 			Timeout:     strings.TrimSpace(timeout),
+			Here:        here,
 			Args:        args,
 		}
 
@@ -281,6 +283,7 @@ func init() {
 	AddIconFlag(createCmd, &icon)
 	AddGroupFlag(createCmd, &group)
 	AddMetadataFlags(createCmd, &description, &params, &cwd, &shell, &timeout)
+	AddHereFlag(createCmd, &here)
 
 	createCmd.Flags().StringVarP(&processName, "process", "p", "", "new command name for a process; pass the process name or pid as an argument")
 	createCmd.Flags().BoolVarP(&fileFlag, "file", "f", false, "ensure arguments are file paths")

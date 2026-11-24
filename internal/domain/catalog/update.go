@@ -41,6 +41,9 @@ type Changes struct {
 	Shell       *string
 	Timeout     *string
 
+	// Here turns in-shell running on or off; nil leaves it alone.
+	Here *bool
+
 	// ClearAliases distinguishes "set the alias list to empty" from "leave it
 	// alone": an empty Aliases slice means not supplied, so a caller that needs
 	// to remove every alias sets this instead.
@@ -157,6 +160,11 @@ func (c Catalog) Update(key string, changes Changes) (UpdateResult, error) {
 		changed++
 	}
 
+	if changes.Here != nil && *changes.Here != updated.Here {
+		updated.Here = *changes.Here
+		changed++
+	}
+
 	if changed == 0 {
 		return UpdateResult{}, ErrNoChange
 	}
@@ -169,6 +177,10 @@ func (c Catalog) Update(key string, changes Changes) (UpdateResult, error) {
 	// Validate after the defaults are filled: the catalog must see the name and
 	// aliases the update would actually leave behind, not the partial input.
 	if err := c.canUpdate(old, updated); err != nil {
+		return UpdateResult{}, err
+	}
+
+	if err := updated.CheckHere(); err != nil {
 		return UpdateResult{}, err
 	}
 

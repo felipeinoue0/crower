@@ -32,6 +32,7 @@ func catalogOf(commandMap command.MapData, order []string) catalog.Catalog {
 			Cwd:         stored.Cwd,
 			Env:         maps.Clone(stored.Env),
 			Timeout:     stored.Timeout,
+			Here:        stored.Here,
 		})
 	}
 
@@ -86,5 +87,6 @@ func toData(c catalog.Command) *command.Data {
 		Cwd:         c.Cwd,
 		Env:         maps.Clone(c.Env),
 		Timeout:     c.Timeout,
+		Here:        c.Here,
 	}
 }

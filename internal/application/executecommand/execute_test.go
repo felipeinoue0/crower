@@ -10,6 +10,7 @@ import (
 	"github.com/felipeinoue0/crower/internal/application/executecommand"
 	"github.com/felipeinoue0/crower/internal/domain/catalog"
 	"github.com/felipeinoue0/crower/internal/domain/operation"
+	errs "github.com/felipeinoue0/crower/internal/errors"
 	"github.com/felipeinoue0/crower/internal/shell"
 )
 
@@ -765,5 +766,53 @@ func TestDryRunFollowsLast(t *testing.T) {
 
 	if got, want := h.output.results, []string{"go build ./..."}; !slices.Equal(got, want) {
 		t.Errorf("results = %q, want %q", got, want)
+	}
+}
+
+// --emit prints an in-shell command's line with its parameters applied,
+// records the run, and runs nothing: the calling shell evaluates the line.
+func TestEmitPrintsRecordsAndRunsNothing(t *testing.T) {
+	h := newHarness(catalog.Command{Name: "greet", Aliases: []string{"g"}, Exec: "export G={1}", Here: true})
+
+	if err := h.run(executecommand.Request{Key: "g", Params: []string{"Ann"}, Emit: true}); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	if len(h.runner.calls) != 0 {
+		t.Errorf("ran %v, want nothing", h.runner.calls)
+	}
+
+	if len(h.output.results) != 1 || !strings.HasPrefix(h.output.results[0], "export G=") || !strings.Contains(h.output.results[0], "Ann") {
+		t.Errorf("results = %q, want the line with the parameter", h.output.results)
+	}
+
+	if len(h.state.records) != 1 || h.state.records[0].op != operation.Execute || h.state.records[0].commandName != "greet" {
+		t.Errorf("records = %+v, want one execute of greet", h.state.records)
+	}
+}
+
+// The hook evaluates what --emit prints, so an ordinary command, or an in-shell
+// one whose stored form needs a child process, is refused with nothing printed
+// and nothing recorded.
+func TestEmitRefusesWhatCannotRunInTheShell(t *testing.T) {
+	tests := []struct {
+		command catalog.Command
+		want    error
+	}{
+		{catalog.Command{Name: "x", Exec: "export A=1"}, errs.ErrNotHere},
+		{catalog.Command{Name: "x", Exec: "export A=1", Here: true, Cwd: "/tmp"}, catalog.ErrHereConflict},
+	}
+
+	for _, tt := range tests {
+		h := newHarness(tt.command)
+
+		err := h.run(executecommand.Request{Key: "x", Emit: true})
+		if !errors.Is(err, tt.want) {
+			t.Errorf("Run(%+v) = %v, want %v", tt.command, err, tt.want)
+		}
+
+		if len(h.output.results) != 0 || len(h.state.records) != 0 || len(h.runner.calls) != 0 {
+			t.Errorf("a refused emit printed %q, recorded %d, ran %v", h.output.results, len(h.state.records), h.runner.calls)
+		}
 	}
 }

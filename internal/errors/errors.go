@@ -52,6 +52,11 @@ var ErrChecksumMismatch = stderrors.New("checksum mismatch")
 // has no usable entry for the asset.
 var ErrChecksumUnavailable = stderrors.New("checksum unavailable")
 
+// ErrNotHere reports `execute --emit` on a command that is not marked --here.
+// The shell hook evaluates what --emit prints, so an ordinary command must
+// never reach that path, even from a hook that predates an update.
+var ErrNotHere = stderrors.New("not an in-shell command (create or update it with --here; if it just changed, open a new terminal to refresh the shell hook)")
+
 // ErrUnknownShell reports a command that names a shell crower does not know.
 // The portable schema allows "sh", "pwsh" and "cmd"; a typo must fail before a
 // process starts rather than fall back to a shell the command did not ask for.

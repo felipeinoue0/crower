@@ -217,3 +217,16 @@ func TestChangeDirs(t *testing.T) {
 		}
 	}
 }
+
+func TestHereWords(t *testing.T) {
+	commands := catalog.New(nil, []catalog.Command{
+		{Name: "act", Aliases: []string{"a"}, Exec: "source .venv/bin/activate", Here: true},
+		{Name: "plain", Exec: "ls"},
+		{Name: "broken", Exec: "ls", Cwd: "/tmp", Here: true},
+	})
+
+	got := hereWords(commands)
+	if len(got) != 2 || !got["act"] || !got["a"] {
+		t.Errorf("hereWords = %v, want act and its alias only", got)
+	}
+}

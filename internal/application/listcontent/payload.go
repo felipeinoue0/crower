@@ -26,6 +26,7 @@ type CommandRow struct {
 	Cwd         string            `json:"cwd,omitempty"`
 	Env         map[string]string `json:"env,omitempty"`
 	Timeout     string            `json:"timeout,omitempty"`
+	Here        bool              `json:"here,omitempty"`
 	Runs        int               `json:"runs,omitempty"`
 	LastRun     string            `json:"last_run,omitempty"`
 }

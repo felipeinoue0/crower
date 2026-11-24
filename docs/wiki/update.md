@@ -20,6 +20,7 @@ crower update [command] [flags]
 | `--cwd` | Working directory the command runs in; an empty value removes it |
 | `--shell` | Shell that runs the command (`sh`, `pwsh`, `cmd`); an empty value removes it |
 | `--timeout` | Longest the command may run, as a Go duration (`120s`); an empty value removes it |
+| `--here` | Run in your own shell through the shell hook; `--here=false` goes back to a subprocess |
 | `-l`, `--last` | Update the most recent entry |
 | `-c`, `--create` | Update the most recent `create` |
 | `-x`, `--execute` | Update the most recent `execute` |

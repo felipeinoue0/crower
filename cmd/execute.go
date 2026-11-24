@@ -16,6 +16,10 @@ var last bool
 // dryRunFlag prints what a run would execute, and runs nothing.
 var dryRunFlag bool
 
+// emitFlag is used by the shell hook for --here commands: print the line for
+// the shell to evaluate, record the run, and run nothing.
+var emitFlag bool
+
 // executeCmd represents the execute command
 var executeCmd = &cobra.Command{
 	Use:   "execute <command> [params...]",
@@ -44,7 +48,17 @@ Arguments after the command are applied to its steps.`,
 			return err
 		}
 
-		request := executecommand.Request{DryRun: dryRunFlag}
+		request := executecommand.Request{DryRun: dryRunFlag, Emit: emitFlag}
+
+		if emitFlag {
+			// The hook evaluates stdout and waits on this process; the
+			// update notice must neither print nor reach the network.
+			skipUpdateNotice = true
+
+			if len(args) == 0 {
+				return missingArgs(cmd, "a command to emit")
+			}
+		}
 
 		// The flags decide which command to run; the use case owns how.
 		switch {
@@ -132,4 +146,6 @@ func init() {
 	executeCmd.Flags().BoolVarP(&createFlag, "create", "c", false, "execute recent created command")
 	executeCmd.Flags().BoolVarP(&updateFlag, "update", "u", false, "execute recent updated command")
 	executeCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "n", false, "print what would run, and run nothing")
+	executeCmd.Flags().BoolVar(&emitFlag, "emit", false, "for the shell hook: print a --here command's line for the shell to run, and record it")
+	_ = executeCmd.Flags().MarkHidden("emit")
 }

@@ -1,8 +1,11 @@
 package catalog
 
 import (
+	"errors"
+	"fmt"
 	"maps"
 	"slices"
+	"strings"
 )
 
 // Command is one managed command: the name it is invoked by, the aliases it
@@ -38,6 +41,55 @@ type Command struct {
 	// Every step inherits both.
 	Env     map[string]string
 	Timeout string
+
+	// Here asks the shell hook to run the exec line in the calling shell
+	// rather than in a child process, so a cd, an export or a `source` stays
+	// in effect. Without the hook the command runs as a subprocess like any
+	// other. See CheckHere for what it cannot be combined with.
+	Here bool
+}
+
+// ErrHereConflict is returned for an in-shell command that also declares
+// something only a child process can honour.
+var ErrHereConflict = errors.New("--here cannot be combined with")
+
+// CheckHere reports why the command cannot run in the calling shell, or nil.
+//
+// Steps, Shell, Cwd, Env and Timeout all describe the child process crower
+// starts; the calling shell has none of them to apply, so silently dropping
+// them would run a different command than the one stored.
+func (c Command) CheckHere() error {
+	if !c.Here {
+		return nil
+	}
+
+	var conflicts []string
+
+	if len(c.Steps) > 0 {
+		conflicts = append(conflicts, "steps")
+	}
+
+	if c.Shell != "" {
+		conflicts = append(conflicts, "--shell")
+	}
+
+	if c.Cwd != "" {
+		conflicts = append(conflicts, "--cwd")
+	}
+
+	if len(c.Env) > 0 {
+		conflicts = append(conflicts, "env")
+	}
+
+	if c.Timeout != "" {
+		conflicts = append(conflicts, "--timeout")
+	}
+
+	if len(conflicts) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("%w %s (they need a child process)", ErrHereConflict, strings.Join(conflicts, ", "))
 }
 
 // clone returns a command whose slices do not share storage with the catalog.

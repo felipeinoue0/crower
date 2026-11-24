@@ -75,6 +75,11 @@ missing folder, a bad duration, or a secret literal fails before anything runs.
 
 Every step of a `Steps` command inherits the whole target.
 
+`Here = true` (`create`/`update --here`) is the opposite of a target: the
+[shell hook](Shell-Integration) runs the line in your own shell instead of a
+child process, so it cannot be combined with any field above, or with `Steps`.
+`crower execute` on its own still runs it as a subprocess.
+
 ```toml
 [deploy]
 Description = "Ship the API"

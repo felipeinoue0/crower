@@ -18,6 +18,7 @@ crower create [name] [exec] [flags]
 | `--cwd` | Working directory the command runs in |
 | `--shell` | Shell that runs the command (`sh`, `pwsh`, `cmd`) |
 | `--timeout` | Longest the command may run, as a Go duration (`120s`) |
+| `--here` | Run in your own shell through the [shell hook](Shell-Integration), so `cd`, `export` and `source` stay in effect; not with `--cwd`, `--shell`, `--timeout`, env or steps |
 | `-f`, `--file` | Treat the arguments as file paths |
 | `-o`, `--folder` | Treat the arguments as folder paths |
 | `--execute` | Create from the last executed command |
@@ -40,6 +41,9 @@ crower create backup -a bkp,bk "tar -czf ~/b.tgz ~/data"
 
 # With an icon and a group, shown in the window's command list
 crower create deploy --icon 🚀 --group ship "make deploy"
+
+# Runs in your shell (with the hook loaded): the venv stays active afterwards
+crower create venv "source .venv/bin/activate" --here
 
 # Files and folders
 crower create --file notes.md todo.txt

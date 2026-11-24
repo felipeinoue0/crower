@@ -40,6 +40,12 @@ func AddMetadataFlags(cmd *cobra.Command, description *string, params *[]string,
 	cmd.Flags().StringVar(timeout, "timeout", "", "how long the command may run, as a Go duration (120s)")
 }
 
+// AddHereFlag adds --here: run the command in the calling shell through the
+// shell hook, so a cd, an export or a `source` stays in effect.
+func AddHereFlag(cmd *cobra.Command, here *bool) {
+	cmd.Flags().BoolVar(here, "here", false, "run in your own shell through the shell hook (cd, export, source stay in effect); --here=false turns it off")
+}
+
 // flagList trims a slice-valued flag and drops the empty entries a trailing
 // comma leaves, so `--params ""` means "clear it".
 func flagList(values []string) []string {

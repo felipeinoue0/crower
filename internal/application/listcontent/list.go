@@ -240,6 +240,7 @@ func (u *UseCase) listCommands(request Request) error {
 			Cwd:         command.Cwd,
 			Env:         redactEnv(command.Env),
 			Timeout:     command.Timeout,
+			Here:        command.Here,
 			Runs:        row.Runs,
 			LastRun:     last,
 		})

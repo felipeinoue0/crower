@@ -244,10 +244,18 @@ gh pr create \
 - After CI passes:
   - **Comment on the issue**: `gh issue comment <issue-number> --body "CI passed — ready to merge to main"`
 - **Ask user to confirm merge**: "CI passed. Ready to merge dev to main?"
-- Only merge after user confirms:
+- Only merge after user confirms — **with a merge commit, never a squash**:
   ```bash
-  gh pr merge <pr-number> --squash
+  gh pr merge <pr-number> --merge
   ```
+
+  `release.yml` refuses to build unless `dev` is an ancestor of `main`
+  (`git merge-base --is-ancestor origin/dev origin/main`), so `main` cannot
+  ship without what `dev` holds. A squash merge copies `dev`'s tree onto `main`
+  as a new commit but leaves `dev`'s commits out of `main`'s history, and the
+  release then stops at "dev has commits that main does not contain" — which
+  is what happened to v0.21.4 (#574, repaired by the merge-commit PR #575).
+  Feature PRs into `dev` are still squash-merged (step 6).
 
   **Never add `--delete-branch` to a release merge.** The release PR's head
   branch is `dev` itself, so `--delete-branch` deletes the integration branch
@@ -257,17 +265,14 @@ gh pr create \
 - After merging:
   - **Comment on the issue**: `gh issue comment <issue-number> --body "Released in <commit-sha>"`
   - **Comment on the PR**: `gh pr comment <pr-number> --body "Released — thanks!"`
-- **Publish the artifacts** — when the project ships a downloadable binary, the
-  tag is what publishes it. Tag the tip of `main` (the squash merge commit) and
-  push the tag:
+- **Publish the artifacts** — dispatch the release workflow on `main`; it tags
+  the tip of `main` itself (do not push a tag by hand):
   ```bash
-  git fetch origin main
-  git tag -a v<major>.<minor>.<patch> "$(git rev-parse origin/main)" -m "Release v<major>.<minor>.<patch>"
-  git push origin v<major>.<minor>.<patch>
+  gh workflow run release.yml --ref main -f version=v<major>.<minor>.<patch> -f publish=true
   ```
-  - The tag must point at a commit that is on `main` — the release workflow
-    refuses to publish a tag that does not, so a tag cut from a side branch
-    fails loudly instead of shipping an unreleased commit.
+  - Without `-f publish=true` it creates or refreshes a **draft**.
+  - It refuses to run while `dev` holds commits `main` does not — see the
+    merge-commit rule above.
   - The workflow builds every platform, writes `checksums.txt`, and creates the
     GitHub Release. Watch it run before announcing the release.
   - **A skipped run published nothing.** A run that never triggered, or whose
@@ -280,15 +285,10 @@ gh pr create \
   commit graph instead, and a squash merge leaves the feature commits on `dev`
   where the release commit cannot see them — the generated notes list the
   release PR and nothing else. If you add a release workflow, call the script.
-- **Merge `main` back into `dev`** — a squash merge leaves `dev` and `main`
-  diverged at the old merge-base, so the *next* release PR would re-list every
-  file from this one:
-  ```bash
-  git checkout dev
-  git pull origin dev
-  git merge origin/main -m "Merge remote-tracking branch 'origin/main' into dev"
-  git push origin dev
-  ```
+- **No merge back into `dev`.** With a merge commit, `dev` is already an
+  ancestor of `main`; the next release PR lists only what `dev` gained since.
+  (A merge back was needed only after a squash, and it meant pushing to `dev`
+  directly, which this workflow forbids.)
 - **Verify `dev` survived** — an empty output means the integration branch is
   gone and everything that targets it is broken:
   ```bash

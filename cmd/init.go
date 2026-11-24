@@ -9,12 +9,14 @@ import (
 	"strings"
 
 	"github.com/felipeinoue0/crower/internal/adapters/shellhook"
+	"github.com/felipeinoue0/crower/internal/adapters/shellsetup"
 	"github.com/felipeinoue0/crower/internal/domain/catalog"
 
 	"github.com/spf13/cobra"
 )
 
 var initApply bool
+var initAll bool
 var initAliasesOnly bool
 
 // initCmd explains, or applies, the environment crower needs: the install
@@ -53,12 +55,27 @@ alias) is skipped, so crower never hides git or cd.`,
 			return printHook(cmd, args[0])
 		}
 
+		if initAll {
+			return setUpAll(cmd)
+		}
+
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
 
-		shell := detectShell()
+		// The shell that started crower, which may differ from $SHELL (a
+		// bash opened from zsh, cmd or either PowerShell on Windows).
+		shell := shellsetup.Parent()
+		if shell == "" {
+			shell = detectShell()
+		}
+
+		switch shell {
+		case shellsetup.Cmd, shellsetup.PowerShell, shellsetup.Pwsh:
+			return initWindowsShell(cmd, shell)
+		}
+
 		target, line := initTarget(shell, home)
 		hookFile, hookLine := hookTarget(shell, home, runtime.GOOS)
 
@@ -108,9 +125,62 @@ alias) is skipped, so crower never hides git or cd.`,
 	},
 }
 
+// initWindowsShell shows, or with --apply performs, the setup of cmd or a
+// PowerShell, whose startup is not a file crower can name in advance.
+func initWindowsShell(cmd *cobra.Command, shell string) error {
+	if !initApply {
+		fmt.Fprintf(streams.Out, "Shell:   %s\n", displayName(shell))
+		fmt.Fprintln(streams.Out)
+		fmt.Fprintln(streams.Out, "The hook turns every crower command into a command of its own, with tab")
+		fmt.Fprintln(streams.Out, `completion. Run "crower init --apply" to set it up, or "crower init --all"`)
+		fmt.Fprintln(streams.Out, "for every shell on this computer.")
+
+		return nil
+	}
+
+	result, err := installHook(cmd, shell)
+	if err != nil {
+		return err
+	}
+
+	if result.Changed {
+		fmt.Fprintf(streams.Out, "%s now loads the crower hook (%s).\n", displayName(shell), result.Where)
+	} else {
+		fmt.Fprintf(streams.Out, "%s already loads crower (%s). Nothing changed.\n", displayName(shell), result.Where)
+	}
+
+	if result.Warning != "" {
+		fmt.Fprintf(streams.Out, "%s. To allow it: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned\n", result.Warning)
+	}
+
+	fmt.Fprintf(streams.Out, "To use it here, %s.\n", reloadHint(shell, result.Where))
+
+	return nil
+}
+
 // printHook writes the hook, or only its alias block with --aliases, for shell.
 func printHook(cmd *cobra.Command, shell string) error {
+	script, err := buildHook(cmd, shell, initAliasesOnly)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprint(streams.Out, script)
+
+	return nil
+}
+
+// buildHook is the hook for shell, or only its alias block.
+func buildHook(cmd *cobra.Command, shell string, aliasesOnly bool) (string, error) {
 	opts := shellhook.Options{Bin: invokedAs(), Reserved: subcommandWords(rootCmd)}
+
+	// cmd's macros reload their file after every crower run, which is how a
+	// cmd window picks up a new command; only a file crower manages qualifies.
+	if shell == shellsetup.Cmd {
+		if file, err := macroFilePath(); err == nil && fileExists(file) {
+			opts.MacroFile = file
+		}
+	}
 
 	if exe, err := os.Executable(); err == nil {
 		opts.Exe = exe
@@ -127,14 +197,8 @@ func printHook(cmd *cobra.Command, shell string) error {
 		fmt.Fprintln(streams.Err, "crower: no command aliases loaded:", err)
 	}
 
-	if initAliasesOnly {
-		script, err := shellhook.Aliases(shell, names, opts)
-		if err != nil {
-			return err
-		}
-
-		fmt.Fprint(streams.Out, script)
-		return nil
+	if aliasesOnly {
+		return shellhook.Aliases(shell, names, opts)
 	}
 
 	var completion bytes.Buffer
@@ -152,14 +216,7 @@ func printHook(cmd *cobra.Command, shell string) error {
 
 	opts.Completion = completion.String()
 
-	script, err := shellhook.Script(shell, names, opts)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprint(streams.Out, script)
-
-	return nil
+	return shellhook.Script(shell, names, opts)
 }
 
 // commandWords is every name and alias a shell can call.
@@ -343,6 +400,7 @@ func applyInit(path, line string) (bool, error) {
 
 func init() {
 	initCmd.Flags().BoolVar(&initApply, "apply", false, "add the PATH line and the hook to your shell startup file")
+	initCmd.Flags().BoolVar(&initAll, "all", false, "set up every shell installed on this computer (bash, zsh, fish, PowerShell, cmd)")
 	initCmd.Flags().BoolVar(&initAliasesOnly, "aliases", false, "print only the alias block (used by the hook to re-sync)")
 	_ = initCmd.Flags().MarkHidden("aliases")
 	rootCmd.AddCommand(initCmd)

@@ -33,4 +33,11 @@ powershell -NoProfile -Command ^
 
 echo.
 echo PATH updated. New terminals will see it immediately.
+
+REM Set up the shell hook in cmd and PowerShell, so commands that change folder
+REM (cd) or run in the shell (--here) work in a new window with no further step.
+if exist "%SCRIPT_DIR%\crower.exe" (
+    echo.
+    "%SCRIPT_DIR%\crower.exe" init --all
+)
 pause

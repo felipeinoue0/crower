@@ -102,6 +102,10 @@ Every command has its own help: crower <command> --help.`,
 			return pickOrHelp(cmd, cfg)
 		}
 
+		if !dryRunFlag {
+			hintNoHook(cfg.Catalog(), args[0])
+		}
+
 		session := newExecuteSession(cfg)
 
 		return executecommand.New(session, session, session, session, session).Run(
@@ -117,9 +121,21 @@ Every command has its own help: crower <command> --help.`,
 // stream. That is the contract a script depends on: the exit status says
 // whether the work happened, and the message says why it did not.
 func Execute() {
+	args := os.Args[1:]
+
+	// Before the command: a person in a shell without the hook is asked,
+	// once, to set it up. It never fails the run.
+	offerSetup(rootCmd, args)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(streams.Err, "error:", err)
 		os.Exit(1)
+	}
+
+	// cmd cannot re-sync its macros the way the other hooks do, so crower
+	// rewrites the file they reload from.
+	if mutatingRun(args) {
+		refreshMacroFile(rootCmd)
 	}
 
 	maybeNotifyUpdate()

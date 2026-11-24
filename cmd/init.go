@@ -110,7 +110,7 @@ alias) is skipped, so crower never hides git or cd.`,
 
 // printHook writes the hook, or only its alias block with --aliases, for shell.
 func printHook(cmd *cobra.Command, shell string) error {
-	opts := shellhook.Options{Bin: invokedAs()}
+	opts := shellhook.Options{Bin: invokedAs(), Reserved: subcommandWords(rootCmd)}
 
 	if exe, err := os.Executable(); err == nil {
 		opts.Exe = exe
@@ -195,6 +195,19 @@ func changeDirs(commands catalog.Catalog) map[string]string {
 	}
 
 	return dirs
+}
+
+// subcommandWords is every word `crower <word>` resolves to a subcommand for:
+// each subcommand's name and aliases, plus cobra's own help and completion.
+func subcommandWords(root *cobra.Command) []string {
+	words := []string{"help", "completion"}
+
+	for _, sub := range root.Commands() {
+		words = append(words, sub.Name())
+		words = append(words, sub.Aliases...)
+	}
+
+	return words
 }
 
 // invokedAs is the program name the user typed, "crower" or "cr", so the hook

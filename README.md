@@ -54,8 +54,8 @@ $ cr                          # nothing else? a fuzzy finder opens — type, ↑
 # 1. Install (Linux / macOS) — Windows: see Installation below
 curl -fsSL https://raw.githubusercontent.com/felipeinoue0/crower/main/scripts/install.sh | sh
 
-# 2. Hook it into your shell: PATH, native aliases, tab completion
-crower init --apply          # then open a new terminal
+# 2. Open a new terminal: the installer already hooked crower into your shells
+#    (on a machine set up another way, the first `cr` you run offers to)
 
 # 3. Bring your existing aliases, or create new ones
 crower import --from-shell
@@ -81,12 +81,9 @@ It picks the newest release, verifies it against `checksums.txt`, and installs
 
 Download `crower_<tag>_windows_amd64.zip` (or `_arm64`) from the
 [releases page](https://github.com/felipeinoue0/crower/releases), extract it, and run
-`add_to_path.bat` from the extracted folder. Double-click **`crower-gui.exe`**
-for the window. Then, in PowerShell:
-
-```powershell
-crower init --apply          # adds the hook to your $PROFILE
-```
+`add_to_path.bat` from the extracted folder — it also sets up cmd and PowerShell,
+so open a new window and every command works there. Double-click
+**`crower-gui.exe`** for the window.
 
 ### 📥 Any platform — from a release archive
 
@@ -114,16 +111,21 @@ Check any install with `crower --version`. Update in place with `crower --upgrad
 ## 🐚 Shell integration
 
 One line in your startup file makes every crower command a command of its own,
-keeps it in sync when you create or delete one, and turns on tab completion.
-`crower init --apply` writes it for you; to do it by hand:
+keeps it in sync when you create or delete one, turns on tab completion, and lets
+a command change your terminal's folder (`cd`) or run in it (`--here`).
+
+**You don't add it yourself.** The installers run `crower init --all`, which sets
+up every shell on the machine; and the first time you run crower in a shell
+without it, crower asks once (Enter = yes) and does it. `crower init --apply`
+sets up the current shell, `CROWER_NO_SETUP=1` turns the question off. By hand:
 
 | Shell | Add to | Line |
 |---|---|---|
 | bash | `~/.bashrc` | `eval "$(crower init bash)"` |
 | zsh | `~/.zshrc` | `eval "$(crower init zsh)"` |
 | fish | `~/.config/fish/config.fish` | `crower init fish \| source` |
-| PowerShell | `$PROFILE` | `crower init powershell \| Out-String \| Invoke-Expression` |
-| cmd.exe | doskey macros | `crower init cmd > %USERPROFILE%\crower.doskey` then `doskey /macrofile=%USERPROFILE%\crower.doskey` |
+| PowerShell (5.1 and 7) | `$PROFILE` | `crower init powershell \| Out-String \| Invoke-Expression` |
+| cmd.exe | `AutoRun` (registry) | `crower init --apply` from cmd writes `%USERPROFILE%\crower\crower.doskey` and loads it from `AutoRun` |
 
 - 🛡️ **Never shadows anything.** A name your shell already knows — a program on
   `PATH`, a builtin, your own alias — is skipped, so crower can't hide `git` or `cd`.

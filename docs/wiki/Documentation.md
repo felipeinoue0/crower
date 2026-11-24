@@ -9,7 +9,7 @@
 ## 📍 Where the pages live
 
 Every page here is a file under
-[`docs/wiki/`](https://github.com/fiwon123/crower/tree/dev/docs/wiki) in the
+[`docs/wiki/`](https://github.com/felipeinoue0/crower/tree/dev/docs/wiki) in the
 repository. A change to a page is therefore a normal pull request: reviewed,
 attributed, and kept in step with the code it describes.
 
@@ -19,7 +19,7 @@ The wiki is a **second git repository** (`crower.wiki.git`). GitHub creates it
 when the first page is made in the web UI; after that:
 
 ```bash
-git clone https://github.com/fiwon123/crower.wiki.git
+git clone https://github.com/felipeinoue0/crower.wiki.git
 cp docs/wiki/*.md crower.wiki/
 cd crower.wiki && git add -A && git commit -m "wiki: sync from docs/wiki" && git push
 ```
@@ -48,4 +48,4 @@ change in the repository and it survives.
 ---
 
 🤝 [Contributing](How-to-Contribute) ·
-🐛 [Issues](https://github.com/fiwon123/crower/issues)
+🐛 [Issues](https://github.com/felipeinoue0/crower/issues)

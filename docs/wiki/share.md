@@ -72,7 +72,7 @@ so two entries can never share a key.
 ## 🛰️ Registry protocol
 
 Any HTTP server can host packs: `index.json` plus `packs/<name>.toml`. See
-[crower-resources](https://github.com/fiwon123/crower-resources) for examples.
+[crower-resources](https://github.com/felipeinoue0/crower-resources) for examples.
 
 > [!NOTE]
 > A pack name is a registry slug (`A-Z a-z 0-9 . _ -`). `share pull` rejects a

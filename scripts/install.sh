@@ -1,14 +1,14 @@
 #!/bin/sh
 # Install crower and cr from a published release.
 #
-#   curl -fsSL https://raw.githubusercontent.com/fiwon123/crower/main/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/felipeinoue0/crower/main/scripts/install.sh | sh
 #   sh scripts/install.sh --version v0.8.0 --dir "$HOME/.local/bin"
 #
 # The archive is verified against the release's checksums.txt before anything
 # is installed. Linux and macOS only; Windows uses the zip and add_to_path.bat.
 set -eu
 
-REPO="fiwon123/crower"
+REPO="felipeinoue0/crower"
 VERSION=""
 INSTALL_DIR="${HOME}/.local/bin"
 VERIFY=1

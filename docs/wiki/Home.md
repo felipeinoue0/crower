@@ -7,9 +7,9 @@
 Save a command once and run it by name in bash, zsh, fish, PowerShell or cmd.
 Every change is recorded and can be undone.
 
-[![Release](https://img.shields.io/github/v/release/fiwon123/crower?style=for-the-badge&color=4C8BF5&label=release)](https://github.com/fiwon123/crower/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/fiwon123/crower/ci.go.yml?branch=main&style=for-the-badge&label=ci&color=22C55E)](https://github.com/fiwon123/crower/actions/workflows/ci.go.yml)
-[![License](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](https://github.com/fiwon123/crower/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/felipeinoue0/crower?style=for-the-badge&color=4C8BF5&label=release)](https://github.com/felipeinoue0/crower/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/felipeinoue0/crower/ci.go.yml?branch=main&style=for-the-badge&label=ci&color=22C55E)](https://github.com/felipeinoue0/crower/actions/workflows/ci.go.yml)
+[![License](https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge)](https://github.com/felipeinoue0/crower/blob/main/LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20macOS%20%7C%20windows-8250DF?style=for-the-badge)](How-to-Install)
 
 </div>
@@ -89,10 +89,10 @@ worked" — is the most useful contribution right now.
 
 <div align="center">
 
-**[⬇️ Releases](https://github.com/fiwon123/crower/releases)** ·
-**[🐛 Issues](https://github.com/fiwon123/crower/issues)** ·
-**[🎯 Roadmap board](https://github.com/users/fiwon123/projects/5)** ·
-**[🤝 Contributing](https://github.com/fiwon123/crower/blob/dev/CONTRIBUTING.md)**
+**[⬇️ Releases](https://github.com/felipeinoue0/crower/releases)** ·
+**[🐛 Issues](https://github.com/felipeinoue0/crower/issues)** ·
+**[🎯 Roadmap board](https://github.com/users/felipeinoue0/projects/5)** ·
+**[🤝 Contributing](https://github.com/felipeinoue0/crower/blob/dev/CONTRIBUTING.md)**
 
 <sub>MIT licensed · Apache-2.0 notices ship in the archives · built with an AI agent, reviewed by a human</sub>
 

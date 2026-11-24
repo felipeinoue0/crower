@@ -131,6 +131,6 @@ windows or arm64 binaries, and it does not draw a window. See
 
 ---
 
-🐛 [Issues](https://github.com/fiwon123/crower/issues) ·
-🎯 [Roadmap board](https://github.com/users/fiwon123/projects/5) ·
+🐛 [Issues](https://github.com/felipeinoue0/crower/issues) ·
+🎯 [Roadmap board](https://github.com/users/felipeinoue0/projects/5) ·
 🤝 [Contributing](How-to-Contribute)

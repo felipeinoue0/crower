@@ -14,7 +14,7 @@ import (
 
 const (
 	// projectURL is where the About tab sends a reader.
-	projectURL = "https://github.com/fiwon123/crower"
+	projectURL = "https://github.com/felipeinoue0/crower"
 
 	// projectSummary is the one-line description the window shows.
 	projectSummary = "A terminal file manager and command-alias manager with undoable history and per-item notes."

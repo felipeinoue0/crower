@@ -222,7 +222,7 @@ about the sandbox made from inside it cannot be about the host's Docker.
 
 ## Key Conventions
 
-- **Assignee**: `fiwon123` — `workflow.md` tells agents to read `ASSIGNEE` from here before assigning issues and PRs
+- **Assignee**: `felipeinoue0` — `workflow.md` tells agents to read `ASSIGNEE` from here before assigning issues and PRs
 - **GitHub credentials**: `GH_TOKEN` or `GITHUB_TOKEN` — either name works, and neither is defined here. The values belong in the host environment; nothing is written into the repository.
 - **Model assignments**: `opencode.json` assigns `opencode/big-pickle` to `build` and `opencode/mimo-v2.6-flash-free` to `plan`. That is a starting point, not a recommendation — no prompt depends on which model an agent runs. Verify a new id with `opencode models` first: a catalog entry on models.dev does not guarantee the installed build offers it, and an unresolvable id fails at spawn rather than at config load.
 - **Repository link**: the README links to the GitHub repository, and the release page is linked from the README — a reader is always one click from the source and from the download.
@@ -353,15 +353,15 @@ Verify them once after a transfer.
 
 ### Project board
 
-- **This repository's board**: <https://github.com/users/fiwon123/projects/5>.
+- **This repository's board**: <https://github.com/users/felipeinoue0/projects/5>.
 - **Issues are the source of truth; the board is a view of them.** Every open
   issue belongs on the board, with its milestone and its status.
 - Status values are **Todo**, **In Progress**, **Done** — the board's own
   `Status` field. Add columns only if the workflow genuinely needs them; a board
   that mirrors four states nothing updates is noise.
 - Keep cards moving with the steps above: issue created → Todo, branch opened →
-  In Progress, PR merged → Done. `gh project item-add 5 --owner fiwon123 --url <issue-url>`
-  adds an issue; `gh project item-list 5 --owner fiwon123` reads the board.
+  In Progress, PR merged → Done. `gh project item-add 5 --owner felipeinoue0 --url <issue-url>`
+  adds an issue; `gh project item-list 5 --owner felipeinoue0` reads the board.
 - Do not duplicate the link graph in comments: the issue's branch, PR and
   milestone are already on it, and the board renders them.
 

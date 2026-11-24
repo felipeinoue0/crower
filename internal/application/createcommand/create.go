@@ -75,6 +75,9 @@ type Request struct {
 	Shell       string
 	Timeout     string
 
+	// Here runs the command in the calling shell through the shell hook.
+	Here bool
+
 	// Args are the positional values the command line carried.
 	Args []string
 
@@ -522,5 +525,6 @@ func (r Request) command(name, exec string) catalog.Command {
 		Cwd:         r.Cwd,
 		Shell:       r.Shell,
 		Timeout:     r.Timeout,
+		Here:        r.Here,
 	}
 }

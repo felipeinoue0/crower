@@ -110,7 +110,7 @@ alias) is skipped, so crower never hides git or cd.`,
 
 // printHook writes the hook, or only its alias block with --aliases, for shell.
 func printHook(cmd *cobra.Command, shell string) error {
-	opts := shellhook.Options{Bin: invokedAs()}
+	opts := shellhook.Options{Bin: invokedAs(), Reserved: subcommandWords(rootCmd)}
 
 	if exe, err := os.Executable(); err == nil {
 		opts.Exe = exe
@@ -122,6 +122,7 @@ func printHook(cmd *cobra.Command, shell string) error {
 	if cfg, err := newSession(cmd); err == nil {
 		names = commandWords(cfg.Catalog())
 		opts.Dirs = changeDirs(cfg.Catalog())
+		opts.Here = hereWords(cfg.Catalog())
 	} else {
 		fmt.Fprintln(streams.Err, "crower: no command aliases loaded:", err)
 	}
@@ -195,6 +196,39 @@ func changeDirs(commands catalog.Catalog) map[string]string {
 	}
 
 	return dirs
+}
+
+// hereWords is every name and alias of a command that runs in the calling
+// shell (--here). A command whose stored form cannot run there is left out, so
+// the hook never routes it to `execute --emit`, which would refuse it.
+func hereWords(commands catalog.Catalog) map[string]bool {
+	words := map[string]bool{}
+
+	for _, command := range commands.Commands() {
+		if !command.Here || command.CheckHere() != nil {
+			continue
+		}
+
+		words[command.Name] = true
+		for _, alias := range command.Aliases {
+			words[alias] = true
+		}
+	}
+
+	return words
+}
+
+// subcommandWords is every word `crower <word>` resolves to a subcommand for:
+// each subcommand's name and aliases, plus cobra's own help and completion.
+func subcommandWords(root *cobra.Command) []string {
+	words := []string{"help", "completion"}
+
+	for _, sub := range root.Commands() {
+		words = append(words, sub.Name())
+		words = append(words, sub.Aliases...)
+	}
+
+	return words
 }
 
 // invokedAs is the program name the user typed, "crower" or "cr", so the hook

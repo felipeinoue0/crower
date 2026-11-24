@@ -29,6 +29,10 @@ type Data struct {
 	// Go duration ("120s"). Both are additive.
 	Env     map[string]string `toml:"Env,omitempty" json:"Env,omitempty"`
 	Timeout string            `toml:"Timeout,omitempty" json:"Timeout,omitempty"`
+
+	// Here runs the command in the calling shell through the shell hook. An
+	// older crower ignores it and runs the command as a subprocess.
+	Here bool `toml:"Here,omitempty" json:"Here,omitempty"`
 }
 
 // Create new command.

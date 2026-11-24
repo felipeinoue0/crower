@@ -96,6 +96,7 @@ field.
 | `--cwd <dir>` | | working directory the command runs in |
 | `--shell <name>` | | shell that runs the command (`sh`, `pwsh`, `cmd`) |
 | `--timeout <dur>` | | longest the command may run (`120s`) |
+| `--here` | | run in your own shell through the shell hook (`cd`, `export`, `source` stay in effect) |
 | `--process <name>` | `-p` | create the command from a running process; the argument is its name or pid |
 | `--file` | `-f` | treat every argument as a file path to create |
 | `--folder` | `-o` | treat every argument as a folder path to create |
@@ -137,6 +138,7 @@ found by name or alias.
 | `--cwd <dir>` | | working directory; empty removes it |
 | `--shell <name>` | | shell that runs the command; empty removes it |
 | `--timeout <dur>` | | longest the command may run; empty removes it |
+| `--here` | | run in your own shell through the shell hook; `--here=false` turns it off |
 | `--last` | `-l` | update the last executed command |
 | `--create` | `-c` | update the last created command |
 | `--execute` | `-x` | update the last updated command |

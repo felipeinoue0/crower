@@ -39,6 +39,7 @@ func (p *Packs) Write(path string, commands []catalog.Command) error {
 			Cwd:         item.Cwd,
 			Env:         maps.Clone(item.Env),
 			Timeout:     item.Timeout,
+			Here:        item.Here,
 		}
 	}
 
@@ -82,6 +83,7 @@ func fromPack(pack map[string]command.Data) []catalog.Command {
 			Cwd:         value.Cwd,
 			Env:         value.Env,
 			Timeout:     value.Timeout,
+			Here:        value.Here,
 		})
 	}
 

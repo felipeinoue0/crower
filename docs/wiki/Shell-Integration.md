@@ -29,13 +29,26 @@ without crower installed still starts cleanly.
   `greet -x 'two words'` runs `crower execute greet -- -x 'two words'`.
 - 📂 **Jumps folders.** A command that is only `cd <folder>` moves the
   terminal you typed it in — `crower create desk "cd /mnt/c/Users/me/Desktop"`
-  then `desk`. A cd run by `crower execute` happens in a child process and is
+  then `desk`, `cr desk` or `cr execute desk`. A cd run by `crower execute` happens in a child process and is
   lost, so for these the hook runs crower first (the run is still counted, and
   a missing folder stops the jump) and then changes folder in your shell:
   `cd` in bash, zsh and fish, `Set-Location` in PowerShell, `cd /d` in cmd.
   The folder must be absolute or start with `~`, written as one word (quote it
   if it has spaces); `cd /d` and `chdir` are accepted. A line with anything
   more — `cd /app && git pull`, `cd $DIR`, `cd src` — runs as before.
+  `cr <name>` follows crower's own rule: a name that is also a subcommand
+  (`list`, `create`, …) runs the subcommand, so use `cr execute <name>`.
+- 🏠 **Runs here, when you ask.** A command created or updated with `--here`
+  runs in your own shell: `crower create venv "source .venv/bin/activate" --here`
+  then `venv`, `cr venv` or `cr execute venv` leaves the venv active. crower
+  fills in the parameters and records the run (`crower execute <name> --emit`,
+  which the hook calls), and the shell evaluates the line: `eval` in bash, zsh
+  and fish, `Invoke-Expression` in PowerShell, `for /f … do call` in cmd.
+  Without the hook — a script, the window, `crower execute` itself — the
+  command runs as a subprocess like any other. Write the line for the shell you
+  run it in; `exit` in it closes that shell. In fish and PowerShell a plain
+  variable stays local to the hook's function: use `set -g` / `$global:`,
+  while `cd` and environment variables (`export`, `$env:`) always reach the shell.
 - 🛡️ **Never shadows.** If the shell already knows the name — a program on
   `PATH`, a builtin or keyword, your own alias or function — crower skips it.
   A command named `ls` or `git` stays reachable as `cr ls`.
@@ -65,6 +78,11 @@ To load it in every cmd window, set the `AutoRun` value of
 `HKCU\Software\Microsoft\Command Processor` to the `doskey` line. cmd does not
 re-sync: run the first line again after adding commands.
 
+When a command only changes folder or runs `--here`, the file also defines `cr`
+and `crower` macros, so `cr desk` acts in the window too; every other `cr …` line is passed to
+the program unchanged. A first or second word that contains a double quote
+(`cr "my cmd"`) confuses cmd's `if`; use the bare name there.
+
 ## 🧪 Check it
 
 ```bash
@@ -78,7 +96,8 @@ crower init zsh | head   # see exactly what the hook defines
 | --- | --- |
 | `deploy: command not found` right after `create` in a script | Aliases apply to lines read *after* they are defined; in an interactive shell the next prompt has it. |
 | `echo y \| crower delete x` keeps the alias (bash) | A function at the end of a pipe runs in a subshell; run it without the pipe. zsh is unaffected. |
-| A `cd` command runs but the folder does not change | The hook is not loaded (`type <name>` shows nothing from crower), or the line is not a plain `cd <absolute folder>` — see "Jumps folders" above. `crower execute` alone can never move your terminal. |
+| A `cd` command runs but the folder does not change | The hook is not loaded (`type cr` should say it is a function; in cmd, `doskey /macros` should list `cr=`), the terminal predates the command's change (`exec $SHELL`), or the line is not a plain `cd <absolute folder>` — see "Jumps folders" above. The program on its own can never move your terminal. |
+| `not an in-shell command …` from a name | The command lost `--here` in another terminal or through a pipe, and this shell's hook is stale. Open a new terminal. |
 | A command is not defined | Its name is already taken in the shell — `type <name>` shows by what. Use `cr <name>`. |
 | zsh: no completion | `compinit` must run before the hook line. |
 
